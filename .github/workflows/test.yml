@@ -25,4 +25,4 @@ jobs:
         run: dotnet build ./Clinic/Clinic.sln --no-restore
 
       - name: Test
-        run: dotnet test ./Clinic/Tests/Test.csproj --no-build --verbosity normal
+        run: dotnet test ./Clinic/Tests/Tests.csproj --no-build --verbosity normal
