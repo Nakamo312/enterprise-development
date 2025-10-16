@@ -25,7 +25,7 @@ public class Appointment : IModel
     /// <summary>
     /// value indicating whether the appointment is a repeated visit.
     /// </summary>
-    public bool IsRepeated { get; set; }
+    public required bool IsRepeated { get; set; }
 
     /// <summary>
     /// patient associated with the appointment.
