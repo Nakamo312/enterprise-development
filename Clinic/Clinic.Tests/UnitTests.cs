@@ -1,4 +1,4 @@
-﻿namespace Tests;
+﻿namespace Clinic.Tests;
 
 /// <summary>
 /// Tests for clinic functionalities.

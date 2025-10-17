@@ -1,4 +1,5 @@
-﻿namespace Domain.Enums;
+﻿namespace Clinic.Domain.Enums;
+
 /// <summary>
 /// Represents the possible blood groups.
 /// </summary>

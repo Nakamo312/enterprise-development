@@ -1,7 +1,7 @@
-﻿using Domain.Enums;
-using Domain.Models;
+﻿using Clinic.Domain.Enums;
+using Clinic.Domain.Models;
 
-namespace Tests;
+namespace Clinic.Tests;
 
 /// <summary>
 /// Provides a comprehensive set of test data fixtures for the Clinic domain entities.

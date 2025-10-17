@@ -1,8 +1,8 @@
-﻿using Domain.Interfaces;
+﻿using Clinic.Domain.Interfaces;
 
-using Domain.Enums;
+using Clinic.Domain.Enums;
 
-namespace Domain.Models;
+namespace Clinic.Domain.Models;
 
 /// <summary>
 /// Represents a patient in the medical clinic.

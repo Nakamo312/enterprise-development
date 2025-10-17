@@ -1,6 +1,6 @@
-﻿using Domain.Interfaces;
+﻿using Clinic.Domain.Interfaces;
 
-namespace Domain.Models;
+namespace Clinic.Domain.Models;
 
 /// <summary>
 /// Represents a doctor in the medical clinic.
