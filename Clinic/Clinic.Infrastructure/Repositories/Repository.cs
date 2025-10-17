@@ -1,6 +1,6 @@
-﻿using Clinic.Domain.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
 using Clinic.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using Clinic.Domain.Models;
 
 namespace Clinic.Infrastructure.Repositories;
 

@@ -1,6 +1,4 @@
-﻿using Clinic.Domain.Interfaces;
-
-using Clinic.Domain.Enums;
+﻿using Clinic.Domain.Enums;
 
 namespace Clinic.Domain.Models;
 

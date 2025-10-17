@@ -1,4 +1,6 @@
-﻿namespace Clinic.Domain.Interfaces;
+﻿using Clinic.Domain.Models;
+
+namespace Clinic.Infrastructure.Repositories;
 public interface IRepository<T> where T : IModel
 {
     public Task<uint> CreateAsync(T entity);

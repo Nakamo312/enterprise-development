@@ -1,6 +1,4 @@
-﻿using Clinic.Domain.Interfaces;
-
-namespace Clinic.Domain.Models;
+﻿namespace Clinic.Domain.Models;
 
 /// <summary>
 /// Represents a specialization of a doctor in the medical clinic.
