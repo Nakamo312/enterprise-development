@@ -3,10 +3,8 @@
 /// <summary>
 /// Tests for clinic functionalities.
 /// </summary>
-public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
+public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
 {
-    private readonly DataFixture _testData = testData;
-
     /// <summary>
     /// Tests doctor experience filter.
     /// </summary>
@@ -25,7 +23,7 @@ public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
             "Смирнов Иван Петрович"
         };
 
-        var actualFullNames = _testData.Doctors
+        var actualFullNames = testData.Doctors
             .Where(d => d.Experience >= minExperience)
             .Select(d => d.FullName)
             .Order()
@@ -40,7 +38,7 @@ public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
     [Fact]
     public void GetPatientsByDoctorInfo()
     {
-        var targetDoctor = _testData.Doctors.First();
+        var targetDoctor = testData.Doctors.First();
         var doctorId = targetDoctor.Id;
 
         var expectedPatientsFullNames = new List<string>
@@ -51,10 +49,10 @@ public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
             "Морозова Анна Владимировна"
         };
 
-        var actualPatientsFullNames = _testData.Appointments
+        var actualPatientsFullNames = testData.Appointments
             .Where(a => a.DoctorId == doctorId)
             .Join(
-                _testData.Patients,
+                testData.Patients,
                 a => a.PatientId,
                 p => p.Id,
                 (a, p) => p
@@ -78,7 +76,7 @@ public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
 
         var expectedAppointmentIds = new List<uint> { 2, 4, 19, 27, 29 };
 
-        var actualAppointmentIds = _testData.Appointments
+        var actualAppointmentIds = testData.Appointments
             .Where(a => a.IsRepeated && a.DateTime >= startDate && a.DateTime <= endDate)
             .Select(a => a.Id)
             .ToList();
@@ -92,7 +90,7 @@ public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
     [Fact]
     public void GetPatientsInfo()
     {
-        var thirtyYearsAgo = new DateOnly(1995, 10, 16);
+        var currentDate = DateTime.Now;
 
         var expectedPatientsFullNames = new List<string>
         {
@@ -111,11 +109,11 @@ public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
             "Соколов Андрей Юрьевич"
         };
 
-        var actualPatientsFullNames = _testData.Appointments
+        var actualPatientsFullNames = testData.Appointments
             .GroupBy(a => a.PatientId)
             .Where(g => g.Select(a => a.DoctorId).Distinct().Count() > 1)
-            .Select(g => _testData.Patients.First(p => p.Id == g.Key))
-            .Where(p => p.DateOfBirth < thirtyYearsAgo)
+            .Select(g => testData.Patients.First(p => p.Id == g.Key))
+            .Where(p => p.DateOfBirth < DateOnly.FromDateTime(currentDate).AddYears(-30))
             .OrderBy(p => p.FullName)
             .Select(p => p.FullName)
             .ToList();
@@ -131,11 +129,11 @@ public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
     {
         var thisMonthStart = new DateTime(2025, 10, 1);
         var thisMonthEnd = new DateTime(2025, 10, 31);
-        var selectedRoomNumber = "101";
+        const string selectedRoomNumber = "101";
 
         var expectedAppointmentIds = new List<uint> { 1, 6 };
 
-        var actualAppointmentIds = _testData.Appointments
+        var actualAppointmentIds = testData.Appointments
             .Where(a => a.DateTime.Date >= thisMonthStart && a.DateTime.Date <= thisMonthEnd && a.RoomNumber == selectedRoomNumber)
             .Select(a => a.Id)
             .ToList();
