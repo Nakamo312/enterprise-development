@@ -7,16 +7,16 @@ namespace Clinic.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CrudControllerBase<TResponseDto, TCreateDto, TUpdateDto>
-    (ICrudService<TResponseDto, TCreateDto, TUpdateDto> service) : ControllerBase
-    where TResponseDto : class
+public class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
+    (ICrudService<TDto, TCreateDto, TUpdateDto> service) : ControllerBase
+    where TDto : class
     where TCreateDto : class
     where TUpdateDto : class
 {
-    protected readonly ICrudService<TResponseDto, TCreateDto, TUpdateDto> _service = service;
+    protected readonly ICrudService<TDto, TCreateDto, TUpdateDto> _service = service;
 
     [HttpGet]
-    public virtual async Task<ActionResult<IEnumerable<TResponseDto>>> GetAll()
+    public virtual async Task<ActionResult<IEnumerable<TDto>>> GetAll()
     {
         try
         {
@@ -30,7 +30,7 @@ public class CrudControllerBase<TResponseDto, TCreateDto, TUpdateDto>
     }
 
     [HttpGet("{id:uint}")]
-    public virtual async Task<ActionResult<TResponseDto>> GetById(uint id)
+    public virtual async Task<ActionResult<TDto>> GetById(uint id)
     {
         try
         {
@@ -45,7 +45,7 @@ public class CrudControllerBase<TResponseDto, TCreateDto, TUpdateDto>
     }
 
     [HttpPost]
-    public virtual async Task<ActionResult<TResponseDto>> Create([FromBody] TCreateDto createDto)
+    public virtual async Task<ActionResult<TDto>> Create([FromBody] TCreateDto createDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 

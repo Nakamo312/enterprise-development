@@ -1,10 +1,10 @@
 ﻿namespace Clinic.Application.Services;
 
-public interface ICrudService<TResponseDto, TCreateDto, TUpdateDto>
+public interface ICrudService<TDto, TCreateDto, TUpdateDto>
 {
-    Task<IEnumerable<TResponseDto>> GetAsync();
-    Task<TResponseDto?> GetAsync(uint id);
-    Task<TResponseDto> CreateAsync(TCreateDto createDto);
-    Task<TResponseDto?> UpdateAsync(uint id, TUpdateDto updateDto);
+    Task<IEnumerable<TDto>> GetAsync();
+    Task<TDto?> GetAsync(uint id);
+    Task<TDto> CreateAsync(TCreateDto createDto);
+    Task<TDto?> UpdateAsync(uint id, TUpdateDto updateDto);
     Task<bool> DeleteAsync(uint id);
 }
