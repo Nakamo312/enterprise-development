@@ -3,10 +3,10 @@
 /// <summary>
 /// Defines a base model interface with a unique identifier.
 /// </summary>
-public interface IModel
+public abstract class Model
 {
     /// <summary>
-    /// unique identifier of the data model.
+    /// Unique identifier of the data model.
     /// </summary>
-    public uint Id { get; set; }
+    public virtual uint Id { get; set; }
 }

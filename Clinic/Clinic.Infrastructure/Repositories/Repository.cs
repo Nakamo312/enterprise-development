@@ -4,7 +4,7 @@ using Clinic.Domain.Models;
 
 namespace Clinic.Infrastructure.Repositories;
 
-public class Repository<T>(AppDbContext context) : IRepository<T> where T : class, IModel
+public class Repository<T>(AppDbContext context) : IRepository<T> where T : Model
 {
     private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
 

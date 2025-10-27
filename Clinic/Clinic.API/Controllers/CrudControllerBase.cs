@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using AutoMapper;
-using Clinic.Domain.Models;
 using Clinic.Application.Services;
+using Clinic.Application.Attributes;
 
 namespace Clinic.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
+public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     (ICrudService<TDto, TCreateDto, TUpdateDto> service) : ControllerBase
     where TDto : class
     where TCreateDto : class
@@ -15,7 +14,10 @@ public class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
 {
     protected readonly ICrudService<TDto, TCreateDto, TUpdateDto> _service = service;
 
+    protected virtual string EntityName => GetType().Name.Replace("Controller", "");
+
     [HttpGet]
+    [Logging("GetAll{Entity}")]
     public virtual async Task<ActionResult<IEnumerable<TDto>>> GetAll()
     {
         try
@@ -29,7 +31,8 @@ public class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
         }
     }
 
-    [HttpGet("{id:uint}")]
+    [HttpGet("{id:int}")]
+    [Logging("Get{Entity}ById")]
     public virtual async Task<ActionResult<TDto>> GetById(uint id)
     {
         try
@@ -45,6 +48,7 @@ public class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     }
 
     [HttpPost]
+    [Logging("Create{Entity}")]
     public virtual async Task<ActionResult<TDto>> Create([FromBody] TCreateDto createDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -60,7 +64,8 @@ public class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
         }
     }
 
-    [HttpPut("{id:uint}")]
+    [HttpPut("{id:int}")]
+    [Logging("Update{Entity}")]
     public virtual async Task<ActionResult> Update(uint id, [FromBody] TUpdateDto updateDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -69,7 +74,7 @@ public class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
         {
             var updatedEntity = await _service.UpdateAsync(id, updateDto);
             if (updatedEntity == null) return NotFound();
-            
+
             return NoContent();
         }
         catch (InvalidOperationException ex)
@@ -78,14 +83,15 @@ public class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
         }
     }
 
-    [HttpDelete("{id:uint}")]
+    [HttpDelete("{id:int}")]
+    [Logging("Delete{Entity}")]
     public virtual async Task<ActionResult> Delete(uint id)
     {
         try
         {
             var deleted = await _service.DeleteAsync(id);
             if (!deleted) return NotFound();
-            
+
             return NoContent();
         }
         catch (InvalidOperationException ex)

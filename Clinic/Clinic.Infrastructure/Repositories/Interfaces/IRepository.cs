@@ -1,7 +1,7 @@
 ﻿using Clinic.Domain.Models;
 
 namespace Clinic.Infrastructure.Repositories;
-public interface IRepository<T> where T : IModel
+public interface IRepository<T> where T : Model
 {
     public Task<uint> CreateAsync(T entity);
     public Task<IEnumerable<T>> GetAsync();

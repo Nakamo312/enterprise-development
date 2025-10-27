@@ -12,7 +12,7 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
         ILogger<BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>> logger
     )
     : ICrudService<TDto, TCreateDto, TUpdateDto>
-    where TModel : class, IModel
+    where TModel : Model
     where TDto : class
     where TCreateDto : class
     where TUpdateDto : class

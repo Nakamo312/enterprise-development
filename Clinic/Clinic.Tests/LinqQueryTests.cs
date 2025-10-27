@@ -3,7 +3,7 @@
 /// <summary>
 /// Tests for clinic functionalities.
 /// </summary>
-public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
+public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
 {
     private readonly DataFixture _testData = testData;
 
@@ -92,7 +92,7 @@ public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
     [Fact]
     public void GetPatientsInfo()
     {
-        var thirtyYearsAgo = new DateOnly(1995, 10, 16);
+        var currentDate = DateTime.Now;
 
         var expectedPatientsFullNames = new List<string>
         {
@@ -115,7 +115,7 @@ public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
             .GroupBy(a => a.PatientId)
             .Where(g => g.Select(a => a.DoctorId).Distinct().Count() > 1)
             .Select(g => _testData.Patients.First(p => p.Id == g.Key))
-            .Where(p => p.DateOfBirth < thirtyYearsAgo)
+            .Where(p => p.DateOfBirth < DateOnly.FromDateTime(currentDate).AddYears(-30))
             .OrderBy(p => p.FullName)
             .Select(p => p.FullName)
             .ToList();
@@ -131,7 +131,7 @@ public class UnitTests(DataFixture testData) : IClassFixture<DataFixture>
     {
         var thisMonthStart = new DateTime(2025, 10, 1);
         var thisMonthEnd = new DateTime(2025, 10, 31);
-        var selectedRoomNumber = "101";
+        const string selectedRoomNumber = "101";
 
         var expectedAppointmentIds = new List<uint> { 1, 6 };
 
