@@ -1,7 +1,7 @@
 ﻿using Clinic.Domain.Enums;
 using Clinic.Domain.Models;
 
-namespace Clinic.Infrastructure.Data;
+namespace Clinic.Domain.Data;
 
 /// <summary>
 /// Provides seed data for the Clinic domain entities.
