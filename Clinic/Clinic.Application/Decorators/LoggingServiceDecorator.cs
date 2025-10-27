@@ -1,133 +1,83 @@
-﻿using Clinic.Application.Attributes;
-using Clinic.Application.Services;
-using Clinic.Application.DTOs;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using System.Reflection;
+using Clinic.Application.Attributes;
 
-public class LoggingServiceDecorator<TService, TDto, TCreateDto, TUpdateDto>(TService decorated, ILogger<TService> logger) : DispatchProxy
-    where TService : ICrudService<TDto, TCreateDto, TUpdateDto>
+namespace Clinic.Application.Filters;
+
+public class LoggingActionFilter(ILogger<LoggingActionFilter> logger) : IActionFilter
 {
-    private TService _decorated = decorated;
-    private ILogger<TService> _logger = logger;
+    private readonly ILogger<LoggingActionFilter> _logger = logger;
 
-    protected override object Invoke(MethodInfo targetMethod, object[] args)
+    public void OnActionExecuting(ActionExecutingContext context)
     {
-        var loggingAttribute = targetMethod.GetCustomAttribute<LoggingAttribute>();
-        if (loggingAttribute == null)
-        {
-            return targetMethod.Invoke(_decorated, args);
-        }
+        var attribute = GetLoggingAttribute(context);
+        if (attribute == null) return;
 
-        return InvokeWithLogging(targetMethod, args, loggingAttribute);
+        var entityName = GetEntityName(context);
+        var operationName = attribute.OperationName.Replace("{Entity}", entityName);
+
+        context.HttpContext.Items["LoggingStopwatch"] = attribute.LogExecutionTime ? Stopwatch.StartNew() : null;
+        context.HttpContext.Items["LoggingOperationName"] = operationName;
+        context.HttpContext.Items["LoggingAttribute"] = attribute;
+
+        _logger.Log(attribute.LogLevel, "🚀 Starting: {OperationName}", operationName);
     }
 
-    private object InvokeWithLogging(MethodInfo targetMethod, object[] args, LoggingAttribute attribute)
+    public void OnActionExecuted(ActionExecutedContext context)
     {
-        var operationName = attribute.OperationName;
-        var serviceName = typeof(TService).Name;
+        var operationName = context.HttpContext.Items["LoggingOperationName"] as string;
+        var attribute = context.HttpContext.Items["LoggingAttribute"] as LoggingAttribute;
+        if (attribute == null || operationName == null) return;
 
-        try
+        var stopwatch = context.HttpContext.Items["LoggingStopwatch"] as Stopwatch;
+
+        if (context.Exception != null)
         {
-            _logger.Log(attribute.LogLevel, "Starting {OperationName} in {ServiceName}",
-                       operationName, serviceName);
-
-            var stopwatch = attribute.LogExecutionTime ? Stopwatch.StartNew() : null;
-
-            var result = targetMethod.Invoke(_decorated, args);
-
-            if (result is Task task)
+            _logger.LogError(context.Exception, "Error in: {OperationName}", operationName);
+        }
+        else
+        {
+            if (attribute.LogExecutionTime && stopwatch != null)
             {
-                return HandleAsyncMethod(task, stopwatch, operationName, serviceName, attribute);
-            }
-
-            stopwatch?.Stop();
-            if (attribute.LogExecutionTime)
-            {
-                _logger.Log(attribute.LogLevel,
-                           "Completed {OperationName} in {ServiceName} in {ElapsedMs}ms",
-                           operationName, serviceName, stopwatch?.ElapsedMilliseconds);
+                stopwatch.Stop();
+                _logger.Log(attribute.LogLevel, "Completed: {OperationName} in {ElapsedMs}ms",
+                    operationName, stopwatch.ElapsedMilliseconds);
             }
             else
             {
-                _logger.Log(attribute.LogLevel, "Completed {OperationName} in {ServiceName}",
-                           operationName, serviceName);
+                _logger.Log(attribute.LogLevel, "Completed: {OperationName}", operationName);
             }
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred during {OperationName} in {ServiceName}",
-                            operationName, serviceName);
-            throw;
         }
     }
 
-    private async Task HandleAsyncMethod(Task task, Stopwatch stopwatch, string operationName,
-                                       string serviceName, LoggingAttribute attribute)
+    private static LoggingAttribute? GetLoggingAttribute(FilterContext context)
     {
-        try
+        if (context.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
         {
-            await task.ConfigureAwait(false);
-            stopwatch?.Stop();
+            var methodAttribute = actionDescriptor.MethodInfo.GetCustomAttributes(typeof(LoggingAttribute), false)
+                .FirstOrDefault() as LoggingAttribute;
 
-            if (attribute.LogExecutionTime)
-            {
-                _logger.Log(attribute.LogLevel,
-                           "Completed {OperationName} in {ServiceName} in {ElapsedMs}ms",
-                           operationName, serviceName, stopwatch?.ElapsedMilliseconds);
-            }
-            else
-            {
-                _logger.Log(attribute.LogLevel, "Completed {OperationName} in {ServiceName}",
-                           operationName, serviceName);
-            }
+            if (methodAttribute != null) return methodAttribute;
+
+            var controllerAttribute = actionDescriptor.ControllerTypeInfo.GetCustomAttributes(typeof(LoggingAttribute), false)
+                .FirstOrDefault() as LoggingAttribute;
+
+            return controllerAttribute;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred during {OperationName} in {ServiceName}",
-                            operationName, serviceName);
-            throw;
-        }
+
+        return null;
     }
 
-    private async Task<T> HandleAsyncMethod<T>(Task<T> task, Stopwatch stopwatch, string operationName,
-                                             string serviceName, LoggingAttribute attribute)
+    private static string GetEntityName(FilterContext context)
     {
-        try
+        if (context.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
         {
-            var result = await task.ConfigureAwait(false);
-            stopwatch?.Stop();
-
-            if (attribute.LogExecutionTime)
-            {
-                _logger.Log(attribute.LogLevel,
-                           "Completed {OperationName} in {ServiceName} in {ElapsedMs}ms",
-                           operationName, serviceName, stopwatch?.ElapsedMilliseconds);
-            }
-            else
-            {
-                _logger.Log(attribute.LogLevel, "Completed {OperationName} in {ServiceName}",
-                           operationName, serviceName);
-            }
-
-            return result;
+            var controllerName = actionDescriptor.ControllerTypeInfo.Name;
+            return controllerName.Replace("Controller", "");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred during {OperationName} in {ServiceName}",
-                            operationName, serviceName);
-            throw;
-        }
-    }
 
-    public static TService Create(TService decorated, ILogger<TService> logger)
-    {
-        object proxy = Create<TService, LoggingServiceDecorator<TService, TDto, TCreateDto, TUpdateDto>>();
-        ((LoggingServiceDecorator<TService, TDto, TCreateDto, TUpdateDto>)proxy)._decorated = decorated;
-        ((LoggingServiceDecorator<TService, TDto, TCreateDto, TUpdateDto>)proxy)._logger = logger;
-
-        return (TService)proxy;
+        return "Unknown";
     }
 }
