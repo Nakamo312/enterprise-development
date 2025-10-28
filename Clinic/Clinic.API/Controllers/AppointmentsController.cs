@@ -9,7 +9,7 @@ namespace Clinic.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class AppointmentController
+public class AppointmentsController
     (
         ICrudService<AppointmentResponseDto, AppointmentCreateDto, AppointmentUpdateDto> service,
         ICrudService<PatientResponseDto, PatientCreateDto, PatientUpdateDto> patientService,

@@ -11,6 +11,11 @@ using Clinic.Application.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.LowercaseUrls = true;
+    options.LowercaseQueryStrings = true;
+});
 
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
@@ -26,7 +31,12 @@ builder.Logging.AddSimpleConsole(options =>
 });
 
 var mapperConfig = new MapperConfiguration(
-    config => config.AddProfile(new MappingProfile()),
+    config =>
+    {
+        config.AddProfile(new MappingProfile());
+        config.AddProfile(new AnalyticQueryProfile());
+    },
+
     LoggerFactory.Create(builder => builder.AddConsole()));
 
 IMapper? mapper = mapperConfig.CreateMapper();
@@ -60,6 +70,8 @@ builder.Services.AddScoped<ICrudService<SpecializationResponseDto, Specializatio
         provider.GetRequiredService<IRepository<Specialization>>(),
         provider.GetRequiredService<IMapper>()
     ));
+
+builder.Services.AddScoped<IAnalyticQueryService, AnalyticQueryService>();
 
 builder.Services.AddSwaggerGen(c =>
 {
