@@ -36,7 +36,7 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
         }
         catch (InvalidOperationException ex)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500);
         }
     }
 
@@ -63,7 +63,7 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
         }
         catch (InvalidOperationException ex)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500);
         }
     }
 
@@ -90,7 +90,7 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
         }
         catch (InvalidOperationException ex)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500);
         }
     }
 
@@ -112,7 +112,7 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
         }
         catch (InvalidOperationException ex)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500);
         }
     }
 
@@ -139,7 +139,7 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
         }
         catch (InvalidOperationException ex)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500);
         }
     }
 }
