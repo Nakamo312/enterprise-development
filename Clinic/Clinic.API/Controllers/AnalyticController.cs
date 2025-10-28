@@ -8,6 +8,7 @@ namespace analytic.API.Controllers;
 /// Controller for analytic queries and reports.
 /// </summary>
 [ApiController]
+[Produces("application/json")]
 [Route("api/[controller]")]
 public class AnalyticController(IAnalyticQueryService analyticQueryService) : ControllerBase
 {
@@ -34,7 +35,7 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
             var result = await _analyticQueryService.GetDoctorsWithExperienceAsync(queryDto);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return StatusCode(500);
         }
@@ -61,7 +62,7 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
             var result = await _analyticQueryService.GetPatientsByDoctorAsync(queryDto);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return StatusCode(500);
         }
@@ -88,7 +89,7 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
             var result = await _analyticQueryService.GetRepeatedAppointmentsAsync(queryDto);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return StatusCode(500);
         }
@@ -110,7 +111,7 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
             var result = await _analyticQueryService.GetPatientsOver30WithMultipleDoctorsAsync();
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return StatusCode(500);
         }
@@ -137,7 +138,7 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
             var result = await _analyticQueryService.GetAppointmentsForRoomThisMonthAsync(queryDto);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return StatusCode(500);
         }

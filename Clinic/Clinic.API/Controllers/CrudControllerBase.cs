@@ -11,6 +11,7 @@ namespace Clinic.API.Controllers;
 /// <typeparam name="TCreateDto">The create DTO type</typeparam>
 /// <typeparam name="TUpdateDto">The update DTO type</typeparam>
 [ApiController]
+[Produces("application/json")]
 [Route("api/[controller]")]
 public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     (ICrudService<TDto, TCreateDto, TUpdateDto> service) : ControllerBase
@@ -38,9 +39,9 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
             var entities = await _service.GetAsync();
             return Ok(entities);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500);
         }
     }
 
@@ -153,11 +154,5 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
         {
             return StatusCode(500);
         }
-    }
-
-    private static int GetEntityId(object entity)
-    {
-        var idProperty = entity.GetType().GetProperty("Id");
-        return (int)(idProperty?.GetValue(entity) ?? 0);
     }
 }

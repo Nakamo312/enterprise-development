@@ -82,21 +82,12 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Clinic Management System API"
     });
 
-    var apiXmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var apiXmlPath = Path.Combine(AppContext.BaseDirectory, apiXmlFile);
-    if (File.Exists(apiXmlPath))
-    {
-        c.IncludeXmlComments(apiXmlPath);
-    }
-    var dtoXmlFile = "Clinic.Application.xml";
-    var dtoXmlPath = Path.Combine(AppContext.BaseDirectory, dtoXmlFile);
-    if (File.Exists(dtoXmlPath))
-    {
-        c.IncludeXmlComments(dtoXmlPath);
-    }
-    c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
-    c.UseAllOfToExtendReferenceSchemas();
-    c.UseAllOfForInheritance();
+    var basePath = AppContext.BaseDirectory;
+
+    c.IncludeXmlComments(Path.Combine(basePath, "Clinic.API.xml"));
+    c.IncludeXmlComments(Path.Combine(basePath, "Clinic.Application.xml"));
+    c.IncludeXmlComments(Path.Combine(basePath, "Clinic.Domain.xml"));
+
 });
 
 var app = builder.Build();
