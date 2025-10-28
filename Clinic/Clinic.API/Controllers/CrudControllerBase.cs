@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Clinic.Application.Services;
+using Clinic.Domain.Models;
 
 namespace Clinic.API.Controllers;
 
@@ -13,7 +14,7 @@ namespace Clinic.API.Controllers;
 [Route("api/[controller]")]
 public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     (ICrudService<TDto, TCreateDto, TUpdateDto> service) : ControllerBase
-    where TDto : class
+    where TDto : Model
     where TCreateDto : class
     where TUpdateDto : class
 {
@@ -74,11 +75,11 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     /// </summary>
     /// <param name="createDto">The entity data to create</param>
     /// <returns>The newly created entity record</returns>
-    /// <response code="200">Returns the newly created entity</response>
+    /// <response code="201">Returns the newly created entity</response>
     /// <response code="400">If the request data is invalid</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpPost]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(201)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
     public virtual async Task<ActionResult<TDto>> Create([FromBody] TCreateDto createDto)
@@ -87,7 +88,7 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
             var entity = await _service.CreateAsync(createDto);
-            return Ok(entity);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity); ;
         }
         catch (InvalidOperationException)
         {

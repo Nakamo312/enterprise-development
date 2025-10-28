@@ -1,16 +1,13 @@
 ﻿using Clinic.Domain.Enums;
+using Clinic.Domain.Models;
 
 namespace Clinic.Application.DTOs;
 
 /// <summary>
 /// Data transfer object representing a patient in response.
 /// </summary>
-public class PatientResponseDto
+public class PatientResponseDto : Model
 {
-    /// <summary>
-    /// Unique identifier of the data model.
-    /// </summary>
-    public required uint Id { get; set; }
     /// <summary>
     /// Passport number of the patient.
     /// </summary>

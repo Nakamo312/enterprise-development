@@ -1,15 +1,12 @@
-﻿namespace Clinic.Application.DTOs;
+﻿using Clinic.Domain.Models;
+
+namespace Clinic.Application.DTOs;
 
 /// <summary>
 /// Data transfer object representing an appointment in response.
 /// </summary>
-public class AppointmentResponseDto
+public class AppointmentResponseDto : Model
 {
-    /// <summary>
-    /// Unique identifier of the appointment.
-    /// </summary>
-    public required uint Id { get; set; }
-
     /// <summary>
     /// Date and time of the appointment.
     /// </summary>

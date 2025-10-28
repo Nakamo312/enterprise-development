@@ -25,7 +25,7 @@ public class AppointmentController
     /// </summary>
     /// <param name="createDto">The appointment data to create</param>
     /// <returns>The newly created appointment record</returns>
-    /// <response code="200">Returns the newly created appointment</response>
+    /// <response code="201">Returns the newly created appointment</response>
     /// <response code="400">If the request data is invalid or patient/doctor does not exist</response>
     /// <response code="500">If there was an internal server error</response>
     public override async Task<ActionResult<AppointmentResponseDto>> Create([FromBody] AppointmentCreateDto createDto)
@@ -47,7 +47,7 @@ public class AppointmentController
             }
 
             var entity = await _service.CreateAsync(createDto);
-            return Ok(entity);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
         }
         catch (InvalidOperationException)
         {
