@@ -1,7 +1,7 @@
-using Clinic.Application.DTOs.Specializations;
+using Clinic.Application.Dtos.Specializations;
 using Clinic.Application.Services;
 
-namespace Clinic.API.Host.Controllers;
+namespace Clinic.Api.Controllers;
 
 /// <summary>
 /// Controller for managing Specializations in the clinic system.

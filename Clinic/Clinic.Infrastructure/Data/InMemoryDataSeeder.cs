@@ -15,11 +15,6 @@ public class InMemoryDataSeeder(
         IRepository<Appointment> appointmentRepository
     ) : IDataSeeder
 {
-    private readonly IRepository<Patient> _patientRepository = patientRepository;
-    private readonly IRepository<Doctor> _doctorRepository = doctorRepository;
-    private readonly IRepository<Specialization> _specializationRepository = specializationRepository;
-    private readonly IRepository<Appointment> _appointmentRepository = appointmentRepository;
-
     /// <summary>
     /// Seeds the in-memory repositories with initial test data.
     /// </summary>
@@ -29,22 +24,22 @@ public class InMemoryDataSeeder(
 
         foreach (var patient in DataSeed.Patients)
         {
-            await _patientRepository.CreateAsync(patient);
+            await patientRepository.CreateAsync(patient);
         }
 
         foreach (var specialization in DataSeed.Specializations)
         {
-            await _specializationRepository.CreateAsync(specialization);
+            await specializationRepository.CreateAsync(specialization);
         }
 
         foreach (var doctor in DataSeed.Doctors)
         {
-            await _doctorRepository.CreateAsync(doctor);
+            await doctorRepository.CreateAsync(doctor);
         }
 
         foreach (var appointment in DataSeed.Appointments)
         {
-            await _appointmentRepository.CreateAsync(appointment);
+            await appointmentRepository.CreateAsync(appointment);
         }
     }
 
@@ -54,28 +49,28 @@ public class InMemoryDataSeeder(
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task ClearAsync()
     {
-        var patients = await _patientRepository.GetAsync();
+        var patients = await patientRepository.GetAsync();
         foreach (var patient in patients)
         {
-            await _patientRepository.DeleteAsync(patient.Id);
+            await patientRepository.DeleteAsync(patient.Id);
         }
 
-        var appointments = await _appointmentRepository.GetAsync();
+        var appointments = await appointmentRepository.GetAsync();
         foreach (var appointment in appointments)
         {
-            await _appointmentRepository.DeleteAsync(appointment.Id);
+            await appointmentRepository.DeleteAsync(appointment.Id);
         }
 
-        var doctors = await _doctorRepository.GetAsync();
+        var doctors = await doctorRepository.GetAsync();
         foreach (var doctor in doctors)
         {
-            await _doctorRepository.DeleteAsync(doctor.Id);
+            await doctorRepository.DeleteAsync(doctor.Id);
         }
 
-        var specializations = await _specializationRepository.GetAsync();
+        var specializations = await specializationRepository.GetAsync();
         foreach (var specialization in specializations)
         {
-            await _specializationRepository.DeleteAsync(specialization.Id);
+            await specializationRepository.DeleteAsync(specialization.Id);
         }
     }
 }

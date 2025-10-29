@@ -1,4 +1,6 @@
-﻿namespace Clinic.Application.DTOs.Analytics;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Clinic.Application.Dtos.Analytics;
 
 /// <summary>
 /// DTO for room appointments query
@@ -8,15 +10,19 @@ public class RoomAppointmentsQueryDto
     /// <summary>
     /// Room number
     /// </summary>
-    public string RoomNumber { get; set; } = string.Empty;
+    [Required(ErrorMessage = "Room number is required")]
+    [StringLength(10, ErrorMessage = "Room number must not exceed 10 characters")]
+    public required string RoomNumber { get; set; } = string.Empty;
 
     /// <summary>
     /// Month start date
     /// </summary>
-    public DateTime MonthStart { get; set; }
+    [Required(ErrorMessage = "Date and time is required")]
+    public required DateTime MonthStart { get; set; }
 
     /// <summary>
     /// Month end date
     /// </summary>
-    public DateTime MonthEnd { get; set; }
+    [Required(ErrorMessage = "Date and time is required")]
+    public required DateTime MonthEnd { get; set; }
 }

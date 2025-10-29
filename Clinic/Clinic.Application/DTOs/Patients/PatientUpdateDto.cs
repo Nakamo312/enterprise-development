@@ -1,8 +1,9 @@
 ﻿using Clinic.Domain.Enums;
 using Clinic.Application.Validation;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
-namespace Clinic.Application.DTOs.Patients;
+namespace Clinic.Application.Dtos.Patients;
 
 /// <summary>
 /// Data transfer object for updating an existing patient.
@@ -30,6 +31,7 @@ public class PatientUpdateDto
     /// <summary>
     /// Date of birth of the patient.
     /// </summary>
+    [DefaultValue("1990-01-01")]
     public DateOnly? DateOfBirth { get; set; }
 
     /// <summary>
@@ -53,7 +55,7 @@ public class PatientUpdateDto
     /// <summary>
     /// Contact phone number of the patient.
     /// </summary>
-    [Phone(ErrorMessage = "Invalid phone number format")]
+    [RegularExpression(@"^+7 \d{3}-\d{2}-\d{2}$", ErrorMessage = "Phone number must be in the format '+7 (XXX) XXX-XX-XX'")]
     [StringLength(20, ErrorMessage = "Phone number must not exceed 20 characters")]
     public string? ContactPhone { get; set; }
 }

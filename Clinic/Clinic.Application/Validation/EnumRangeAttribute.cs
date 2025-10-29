@@ -5,19 +5,8 @@ namespace Clinic.Application.Validation;
 /// <summary>
 /// Validation attribute that ensures a value is a valid member of the specified enumeration type.
 /// </summary>
-public class EnumRangeAttribute : ValidationAttribute
+public class EnumRangeAttribute(Type enumType) : ValidationAttribute
 {
-    private readonly Type _enumType;
-
-    /// <summary>
-    /// Initializes a new instance of the EnumRangeAttribute class.
-    /// </summary>
-    /// <param name="enumType">The type of enumeration to validate against.</param>
-    public EnumRangeAttribute(Type enumType)
-    {
-        _enumType = enumType;
-    }
-
     /// <summary>
     /// Validates that the specified value is a defined member of the enumeration.
     /// </summary>
@@ -28,9 +17,9 @@ public class EnumRangeAttribute : ValidationAttribute
     {
         if (value == null) return ValidationResult.Success;
 
-        if (!Enum.IsDefined(_enumType, value))
+        if (!Enum.IsDefined(enumType, value))
         {
-            var validValues = string.Join(", ", Enum.GetNames(_enumType));
+            var validValues = string.Join(", ", Enum.GetNames(enumType));
             return new ValidationResult($"The field {validationContext.DisplayName} must be one of: {validValues}");
         }
 

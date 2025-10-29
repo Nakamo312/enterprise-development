@@ -11,12 +11,12 @@ public interface IDataSeeder
     /// Populates the database with predefined entities for application initialization.
     /// </summary>
     /// <returns>A task representing the asynchronous seeding operation.</returns>
-    Task SeedAsync();
+    public Task SeedAsync();
 
     /// <summary>
     /// Clears all data from the data store.
     /// Removes all entities to prepare for fresh data initialization or testing scenarios.
     /// </summary>
     /// <returns>A task representing the asynchronous clearing operation.</returns>
-    Task ClearAsync();
+    public Task ClearAsync();
 }

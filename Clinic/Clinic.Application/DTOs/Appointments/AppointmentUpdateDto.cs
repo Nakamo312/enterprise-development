@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
-namespace Clinic.Application.DTOs.Appointments;
+namespace Clinic.Application.Dtos.Appointments;
 
 /// <summary>
 /// Data transfer object for updating an existing appointment.
@@ -21,6 +22,7 @@ public class AppointmentUpdateDto
     /// <summary>
     /// Value indicating whether the appointment is a repeated visit.
     /// </summary>
+    [DefaultValue(false)]
     public bool? IsRepeated { get; set; }
 
     /// <summary>

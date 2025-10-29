@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Clinic.Application.DTOs.Appointments;
+using Clinic.Application.Dtos.Appointments;
 using Clinic.Domain.Models;
 using Clinic.Infrastructure.Repositories;
 
@@ -12,7 +12,4 @@ namespace Clinic.Application.Services;
 /// <param name="repository">The repository for Appointment data access.</param>
 /// <param name="mapper">The AutoMapper instance for object mapping.</param>
 public class AppointmentService(IRepository<Appointment> repository, IMapper mapper)
-    : BaseCrudService<Appointment, AppointmentResponseDto, AppointmentCreateDto, AppointmentUpdateDto>(repository, mapper)
-{
-
-}
+    : BaseCrudService<Appointment, AppointmentResponseDto, AppointmentCreateDto, AppointmentUpdateDto>(repository, mapper);

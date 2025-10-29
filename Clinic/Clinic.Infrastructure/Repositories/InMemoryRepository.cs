@@ -9,7 +9,7 @@ namespace Clinic.Infrastructure.Repositories;
 /// <typeparam name="T">The type of entity this repository works with, must inherit from Model.</typeparam>
 public class InMemoryRepository<T> : IRepository<T> where T : Model
 {
-    private readonly List<T> _entities = new();
+    private readonly List<T> _entities = [];
     private uint _nextId = 1;
 
     /// <summary>
@@ -51,11 +51,19 @@ public class InMemoryRepository<T> : IRepository<T> where T : Model
     public Task<T?> UpdateAsync(T entity)
     {
         var existing = _entities.FirstOrDefault(e => e.Id == entity.Id);
+
         if (existing != null)
         {
-            _entities.Remove(existing);
-            _entities.Add(entity);
-            return Task.FromResult<T?>(entity);
+            var properties = typeof(T).GetProperties();
+            foreach (var property in properties)
+            {
+                if (property.Name == "Id" || !property.CanWrite)
+                    continue;
+
+                var newValue = property.GetValue(entity);
+                property.SetValue(existing, newValue);
+            }
+            return Task.FromResult<T?>(existing);
         }
         return Task.FromResult<T?>(null);
     }

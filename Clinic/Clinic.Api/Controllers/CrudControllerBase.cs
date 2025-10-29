@@ -2,7 +2,7 @@
 using Clinic.Application.Services;
 
 
-namespace Clinic.API.Host.Controllers;
+namespace Clinic.Api.Controllers;
 
 /// <summary>
 /// Base controller providing CRUD operations for entities.
@@ -16,10 +16,6 @@ namespace Clinic.API.Host.Controllers;
 public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     (ICrudService<TDto, TCreateDto, TUpdateDto> service) : ControllerBase
 {
-    protected readonly ICrudService<TDto, TCreateDto, TUpdateDto> _service = service;
-
-    protected virtual string EntityName => GetType().Name.Replace("Controller", "");
-
     /// <summary>
     /// Retrieves all entities.
     /// </summary>
@@ -33,7 +29,7 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     {
         try
         {
-            var entities = await _service.GetAsync();
+            var entities = await service.GetAsync();
             return Ok(entities);
         }
         catch (InvalidOperationException)
@@ -58,7 +54,7 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     {
         try
         {
-            var entity = await _service.GetAsync(id);
+            var entity = await service.GetAsync(id);
             if (entity == null) return NotFound();
             return Ok(entity);
         }
@@ -85,7 +81,7 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
         try
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var entity = await _service.CreateAsync(createDto);
+            var entity = await service.CreateAsync(createDto);
             var id = GetIdFromDto(entity);
             return CreatedAtAction(nameof(GetById), new { id }, entity);
         }
@@ -116,7 +112,7 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
         try
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var updatedEntity = await _service.UpdateAsync(id, updateDto);
+            var updatedEntity = await service.UpdateAsync(id, updateDto);
             if (updatedEntity == null) return NotFound();
 
             return NoContent();
@@ -143,7 +139,7 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     {
         try
         {
-            var deleted = await _service.DeleteAsync(id);
+            var deleted = await service.DeleteAsync(id);
             if (!deleted) return NotFound();
 
             return NoContent();

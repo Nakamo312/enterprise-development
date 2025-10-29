@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
-namespace Clinic.Application.DTOs.Doctors;
+namespace Clinic.Application.Dtos.Doctors;
 
 /// <summary>
 /// Data transfer object for updating an existing doctor.
@@ -22,6 +23,7 @@ public class DoctorUpdateDto
     /// <summary>
     /// Year of birth of the doctor.
     /// </summary>
+    [DefaultValue(1990)]
     [Range(1900, 2100, ErrorMessage = "Year of birth must be between 1900 and 2100")]
     public uint? YearOfBirth { get; set; }
 
@@ -33,6 +35,7 @@ public class DoctorUpdateDto
     /// <summary>
     /// Work experience (in years) of the doctor.
     /// </summary>
+    [DefaultValue(0)]
     [Range(0, 100, ErrorMessage = "Experience must be between 0 and 100 years")]
-    public int? Experience { get; set; }
+    public uint? Experience { get; set; }
 }

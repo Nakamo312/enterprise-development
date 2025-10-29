@@ -92,7 +92,7 @@ public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
     [Fact]
     public void GetPatientsInfo()
     {
-        var currentDate = DateTime.Now;
+        var currentDate = new DateTime(2025, 29, 10);
 
         var expectedPatientsFullNames = new List<string>
         {

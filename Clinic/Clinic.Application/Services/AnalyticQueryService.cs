@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Clinic.Application.Services;
 using Clinic.Domain.Models;
-
 using Clinic.Infrastructure.Repositories;
-using Clinic.Application.DTOs.Analytics;
+using Clinic.Application.Dtos.Analytics;
+using Clinic.Application.Dtos.Doctors;
+using Clinic.Application.Dtos.Patients;
 
 /// <summary>
 /// Implementation of clinic query service.
@@ -16,24 +17,18 @@ public class AnalyticQueryService
         IMapper mapper
     ) : IAnalyticQueryService
 {
-    private readonly IRepository<Doctor> _doctorRepository = doctorRepository;
-    private readonly IRepository<Patient> _patientRepository = patientRepository;
-    private readonly IRepository<Appointment> _appointmentRepository = appointmentRepository;
-    private readonly IMapper _mapper = mapper;
-
     /// <inheritdoc/>
-    public async Task<NamesResponseDto> GetDoctorsWithExperienceAsync(DoctorsExperienceQueryDto queryDto)
+    public async Task<IEnumerable<DoctorResponseDto>> GetDoctorsWithExperienceAsync(uint experience)
     {
         try
         {
-            var doctors = await _doctorRepository.GetAsync();
-            var names = doctors
-                .Where(d => d.Experience >= queryDto.MinExperience)
-                .Select(d => d.FullName)
-                .Order()
+            var doctors = await doctorRepository.GetAsync();
+            var filteredDoctors = doctors
+                .Where(d => d.Experience >= experience)
+                .OrderBy(d => d.FullName)
                 .ToList();
 
-            return new NamesResponseDto { Names = names };
+            return mapper.Map<List<DoctorResponseDto>>(filteredDoctors);
         }
         catch (Exception ex)
         {
@@ -42,15 +37,15 @@ public class AnalyticQueryService
     }
 
     /// <inheritdoc/>
-    public async Task<NamesResponseDto> GetPatientsByDoctorAsync(DoctorPatientsQueryDto queryDto)
+    public async Task<IEnumerable<PatientResponseDto>> GetPatientsByDoctorAsync(uint doctorId)
     {
         try
         {
-            var appointments = await _appointmentRepository.GetAsync();
-            var patients = await _patientRepository.GetAsync();
+            var appointments = await appointmentRepository.GetAsync();
+            var patients = await patientRepository.GetAsync();
 
-            var patientFullNames = appointments
-                .Where(a => a.DoctorId == queryDto.DoctorId)
+            var filteredPatients = appointments
+                .Where(a => a.DoctorId == doctorId)
                 .Join(
                     patients,
                     a => a.PatientId,
@@ -59,29 +54,28 @@ public class AnalyticQueryService
                 )
                 .DistinctBy(p => p.Id)
                 .OrderBy(p => p.FullName)
-                .Select(p => p.FullName)
                 .ToList();
 
-            return new NamesResponseDto { Names = patientFullNames };
+            return mapper.Map<List<PatientResponseDto>>(filteredPatients);
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to retrieve patients for doctor with ID {queryDto.DoctorId}", ex);
+            throw new InvalidOperationException($"Failed to retrieve patients for doctor with ID {doctorId}", ex);
         }
     }
 
     /// <inheritdoc/>
-    public async Task<IdsResponseDto> GetRepeatedAppointmentsAsync(RepeatedAppointmentsQueryDto queryDto)
+    public async Task<IEnumerable<uint>> GetRepeatedAppointmentsAsync(DateTime startDate, DateTime endDate)
     {
         try
         {
-            var appointments = await _appointmentRepository.GetAsync();
+            var appointments = await appointmentRepository.GetAsync();
             var ids = appointments
-                .Where(a => a.IsRepeated && a.DateTime >= queryDto.StartDate && a.DateTime <= queryDto.EndDate)
+                .Where(a => a.IsRepeated && a.DateTime >= startDate && a.DateTime <= endDate)
                 .Select(a => a.Id)
                 .ToList();
 
-            return new IdsResponseDto { Ids = ids };
+            return ids;
         }
         catch (Exception ex)
         {
@@ -90,24 +84,23 @@ public class AnalyticQueryService
     }
 
     /// <inheritdoc/>
-    public async Task<NamesResponseDto> GetPatientsOver30WithMultipleDoctorsAsync()
+    public async Task<IEnumerable<PatientResponseDto>> GetPatientsOver30WithMultipleDoctorsAsync()
     {
         try
         {
             var currentDate = DateTime.Now;
-            var appointments = await _appointmentRepository.GetAsync();
-            var patients = await _patientRepository.GetAsync();
+            var appointments = await appointmentRepository.GetAsync();
+            var patients = await patientRepository.GetAsync();
 
-            var patientFullNames = appointments
+            var filteredPatients = appointments
                 .GroupBy(a => a.PatientId)
                 .Where(g => g.Select(a => a.DoctorId).Distinct().Count() > 1)
                 .Select(g => patients.First(p => p.Id == g.Key))
                 .Where(p => p.DateOfBirth < DateOnly.FromDateTime(currentDate).AddYears(-30))
                 .OrderBy(p => p.FullName)
-                .Select(p => p.FullName)
                 .ToList();
 
-            return new NamesResponseDto { Names = patientFullNames };
+            return mapper.Map<List<PatientResponseDto>>(filteredPatients);
         }
         catch (Exception ex)
         {
@@ -116,17 +109,17 @@ public class AnalyticQueryService
     }
 
     /// <inheritdoc/>
-    public async Task<IdsResponseDto> GetAppointmentsForRoomThisMonthAsync(RoomAppointmentsQueryDto queryDto)
+    public async Task<IEnumerable<uint>> GetAppointmentsForRoomThisMonthAsync(RoomAppointmentsQueryDto queryDto)
     {
         try
         {
-            var appointments = await _appointmentRepository.GetAsync();
+            var appointments = await appointmentRepository.GetAsync();
             var ids = appointments
                 .Where(a => a.DateTime.Date >= queryDto.MonthStart && a.DateTime.Date <= queryDto.MonthEnd && a.RoomNumber == queryDto.RoomNumber)
                 .Select(a => a.Id)
                 .ToList();
 
-            return new IdsResponseDto { Ids = ids };
+            return ids;
         }
         catch (Exception ex)
         {

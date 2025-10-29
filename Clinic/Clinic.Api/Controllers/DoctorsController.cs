@@ -1,9 +1,9 @@
-using Clinic.Application.DTOs.Doctors;
-using Clinic.Application.DTOs.Specializations;
+using Clinic.Application.Dtos.Doctors;
+using Clinic.Application.Dtos.Specializations;
 using Clinic.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Clinic.API.Host.Controllers;
+namespace Clinic.Api.Controllers;
 
 /// <summary>
 /// Controller for managing doctors in the clinic system.
@@ -15,8 +15,6 @@ public class DoctorsController
     )
     : CrudControllerBase<DoctorResponseDto, DoctorCreateDto, DoctorUpdateDto>(service)
 {
-    private readonly ICrudService<SpecializationResponseDto, SpecializationCreateDto, SpecializationUpdateDto> _specializationService = specializationService;
-
     /// <summary>
     /// Creates a new doctor record.
     /// </summary>
@@ -31,13 +29,13 @@ public class DoctorsController
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var specialization = await _specializationService.GetAsync(createDto.SpecializationId);
+            var specialization = await specializationService.GetAsync(createDto.SpecializationId);
             if (specialization == null)
             {
                 return BadRequest(new { error = $"Specialization with ID {createDto.SpecializationId} does not exist" });
             }
 
-            var entity = await _service.CreateAsync(createDto);
+            var entity = await service.CreateAsync(createDto);
             return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity); ;
         }
         catch (InvalidOperationException)
@@ -64,14 +62,14 @@ public class DoctorsController
 
             if (updateDto.SpecializationId.HasValue)
             {
-                var specialization = await _specializationService.GetAsync(updateDto.SpecializationId.Value);
+                var specialization = await specializationService.GetAsync(updateDto.SpecializationId.Value);
                 if (specialization == null)
                 {
                     return BadRequest(new { error = $"Specialization with ID {updateDto.SpecializationId} does not exist" });
                 }
             }
 
-            var updatedEntity = await _service.UpdateAsync(id, updateDto);
+            var updatedEntity = await service.UpdateAsync(id, updateDto);
             if (updatedEntity == null) return NotFound();
 
             return NoContent();

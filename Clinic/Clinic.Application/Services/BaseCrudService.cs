@@ -94,7 +94,21 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
             var entity = await _repository.GetAsync(id);
             if (entity == null) return null;
 
-            _mapper.Map(updateDto, entity);
+            var dtoProperties = typeof(TUpdateDto).GetProperties();
+            var entityProperties = typeof(TModel).GetProperties();
+
+            foreach (var dtoProp in dtoProperties)
+            {
+                var dtoValue = dtoProp.GetValue(updateDto);
+                if (dtoValue == null) continue;
+
+                var entityProp = entityProperties.FirstOrDefault(p => p.Name == dtoProp.Name);
+                if (entityProp != null && entityProp.CanWrite)
+                {
+                    entityProp.SetValue(entity, dtoValue);
+                }
+            }
+
             await _repository.UpdateAsync(entity);
             return _mapper.Map<TDto>(entity);
         }

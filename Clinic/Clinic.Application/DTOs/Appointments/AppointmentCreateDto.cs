@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Clinic.Application.DTOs.Appointments;
+namespace Clinic.Application.Dtos.Appointments;
 
 /// <summary>
 /// Data transfer object for creating a new appointment.

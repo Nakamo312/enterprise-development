@@ -1,7 +1,7 @@
-﻿using Clinic.Application.DTOs.Patients;
+﻿using Clinic.Application.Dtos.Patients;
 using Clinic.Application.Services;
 
-namespace Clinic.API.Host.Controllers;
+namespace Clinic.Api.Controllers;
 
 /// <summary>
 /// Controller for managing patients in the clinic system.

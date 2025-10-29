@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Clinic.Application.DTOs.Specializations;
+namespace Clinic.Application.Dtos.Specializations;
 
 /// <summary>
 /// Data transfer object for updating an existing specialization.

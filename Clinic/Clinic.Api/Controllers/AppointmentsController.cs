@@ -1,10 +1,10 @@
-using Clinic.Application.DTOs.Appointments;
-using Clinic.Application.DTOs.Doctors;
-using Clinic.Application.DTOs.Patients;
+using Clinic.Application.Dtos.Appointments;
+using Clinic.Application.Dtos.Doctors;
+using Clinic.Application.Dtos.Patients;
 using Clinic.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Clinic.API.Host.Controllers;
+namespace Clinic.Api.Controllers;
 
 /// <summary>
 /// Controller for managing appointments in the clinic system.
@@ -17,8 +17,6 @@ public class AppointmentsController
     )
          : CrudControllerBase<AppointmentResponseDto, AppointmentCreateDto, AppointmentUpdateDto>(service)
 {
-    private readonly ICrudService<PatientResponseDto, PatientCreateDto, PatientUpdateDto> _patientService = patientService;
-    private readonly ICrudService<DoctorResponseDto, DoctorCreateDto, DoctorUpdateDto> _doctorService = doctorService;
 
     /// <summary>
     /// Creates a new appointment record.
@@ -34,19 +32,19 @@ public class AppointmentsController
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var patient = await _patientService.GetAsync(createDto.PatientId);
+            var patient = await patientService.GetAsync(createDto.PatientId);
             if (patient == null)
             {
                 return BadRequest(new { error = $"Patient with ID {createDto.PatientId} does not exist" });
             }
 
-            var doctor = await _doctorService.GetAsync(createDto.DoctorId);
+            var doctor = await doctorService.GetAsync(createDto.DoctorId);
             if (doctor == null)
             {
                 return BadRequest(new { error = $"Doctor with ID {createDto.DoctorId} does not exist" });
             }
 
-            var entity = await _service.CreateAsync(createDto);
+            var entity = await service.CreateAsync(createDto);
             return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
         }
         catch (InvalidOperationException)
@@ -73,7 +71,7 @@ public class AppointmentsController
 
             if (updateDto.PatientId.HasValue)
             {
-                var patient = await _patientService.GetAsync(updateDto.PatientId.Value);
+                var patient = await patientService.GetAsync(updateDto.PatientId.Value);
                 if (patient == null)
                 {
                     return BadRequest(new { error = $"Patient with ID {updateDto.PatientId} does not exist" });
@@ -82,14 +80,14 @@ public class AppointmentsController
 
             if (updateDto.DoctorId.HasValue)
             {
-                var doctor = await _doctorService.GetAsync(updateDto.DoctorId.Value);
+                var doctor = await doctorService.GetAsync(updateDto.DoctorId.Value);
                 if (doctor == null)
                 {
                     return BadRequest(new { error = $"Doctor with ID {updateDto.DoctorId} does not exist" });
                 }
             }
 
-            var updatedEntity = await _service.UpdateAsync(id, updateDto);
+            var updatedEntity = await service.UpdateAsync(id, updateDto);
             if (updatedEntity == null) return NotFound();
 
             return NoContent();
