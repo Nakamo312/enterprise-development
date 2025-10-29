@@ -19,18 +19,6 @@ builder.Services.Configure<RouteOptions>(options =>
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
 });
-builder.Services.AddControllers()
-    .ConfigureApiBehaviorOptions(options =>
-    {
-        options.InvalidModelStateResponseFactory = context =>
-        {
-            var response = new
-            {
-                error = "Invalid request payload."
-            };
-            return new BadRequestObjectResult(response);
-        };
-    });
 
 builder.Services.AddControllers().AddJsonOptions(opts =>
 {
