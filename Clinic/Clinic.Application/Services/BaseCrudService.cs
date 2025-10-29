@@ -20,9 +20,6 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
     : ICrudService<TDto, TCreateDto, TUpdateDto> 
     where TDto : class?
 {
-    protected readonly IRepository<TModel> _repository = repository;
-    protected readonly IMapper _mapper = mapper;
-
     /// <summary>
     /// Retrieves all entities as DTOs.
     /// </summary>
@@ -32,8 +29,8 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
     {
         try
         {
-            var entities = await _repository.GetAsync();
-            return _mapper.Map<List<TDto>>(entities);
+            var entities = await repository.GetAsync();
+            return mapper.Map<List<TDto>>(entities);
         }
         catch (Exception ex)
         {
@@ -51,8 +48,8 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
     {
         try
         {
-            var entity = await _repository.GetAsync(id);
-            return entity == null ? null : _mapper.Map<TDto>(entity);
+            var entity = await repository.GetAsync(id);
+            return entity == null ? null : mapper.Map<TDto>(entity);
         }
         catch (Exception ex)
         {
@@ -70,9 +67,9 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
     {
         try
         {
-            var entity = _mapper.Map<TModel>(createDto);
-            await _repository.CreateAsync(entity);
-            return _mapper.Map<TDto>(entity);
+            var entity = mapper.Map<TModel>(createDto);
+            await repository.CreateAsync(entity);
+            return mapper.Map<TDto>(entity);
         }
         catch (Exception ex)
         {
@@ -91,7 +88,7 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
     {
         try
         {
-            var entity = await _repository.GetAsync(id);
+            var entity = await repository.GetAsync(id);
             if (entity == null) return null;
 
             var dtoProperties = typeof(TUpdateDto).GetProperties();
@@ -109,8 +106,8 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
                 }
             }
 
-            await _repository.UpdateAsync(entity);
-            return _mapper.Map<TDto>(entity);
+            await repository.UpdateAsync(entity);
+            return mapper.Map<TDto>(entity);
         }
         catch (Exception ex)
         {
@@ -128,10 +125,10 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
     {
         try
         {
-            var exists = await _repository.GetAsync(id);
+            var exists = await repository.GetAsync(id);
             if (exists == null) return false;
 
-            await _repository.DeleteAsync(id);
+            await repository.DeleteAsync(id);
             return true;
         }
         catch (Exception ex)
