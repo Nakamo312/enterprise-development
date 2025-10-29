@@ -92,7 +92,7 @@ public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
     [Fact]
     public void GetPatientsInfo()
     {
-        var currentDate = new DateTime(2025, 29, 10);
+        var currentDate = new DateOnly(2025, 10, 29);
 
         var expectedPatientsFullNames = new List<string>
         {
@@ -115,7 +115,7 @@ public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
             .GroupBy(a => a.PatientId)
             .Where(g => g.Select(a => a.DoctorId).Distinct().Count() > 1)
             .Select(g => _testData.Patients.First(p => p.Id == g.Key))
-            .Where(p => p.DateOfBirth < DateOnly.FromDateTime(currentDate).AddYears(-30))
+            .Where(p => p.DateOfBirth < currentDate.AddYears(-30))
             .OrderBy(p => p.FullName)
             .Select(p => p.FullName)
             .ToList();

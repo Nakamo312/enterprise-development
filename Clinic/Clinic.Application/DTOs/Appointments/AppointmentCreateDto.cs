@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Clinic.Application.Dtos.Appointments;
 
@@ -23,6 +24,7 @@ public class AppointmentCreateDto
     /// <summary>
     /// Value indicating whether the appointment is a repeated visit.
     /// </summary>
+    [DefaultValue(false)]
     [Required(ErrorMessage = "IsRepeated flag is required")]
     public required bool IsRepeated { get; set; }
 
