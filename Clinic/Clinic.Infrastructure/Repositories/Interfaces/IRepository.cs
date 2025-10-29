@@ -1,13 +1,11 @@
-﻿using Clinic.Domain.Models;
+﻿namespace Clinic.Infrastructure.Repositories;
 
-namespace Clinic.Infrastructure.Repositories;
-
-/// <summary>
-/// Generic repository interface for performing CRUD operations on domain entities.
+/// Generic repository interface for performing CRUD operations on domain
+/// <summary> entities.
 /// Provides basic create, read, update, and delete functionality for all entity types.
 /// </summary>
 /// <typeparam name="T">The type of entity this repository works with, must inherit from Model.</typeparam>
-public interface IRepository<T> where T : Model
+public interface IRepository<T> 
 {
     /// <summary>
     /// Creates a new entity in the repository.

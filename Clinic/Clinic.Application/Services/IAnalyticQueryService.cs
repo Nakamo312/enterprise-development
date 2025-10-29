@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Clinic.Application.DTOs;
+using Clinic.Application.DTOs.Analytics;
 using Clinic.Domain.Models;
 using Clinic.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;

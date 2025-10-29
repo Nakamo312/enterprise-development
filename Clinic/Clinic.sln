@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clinic.Tests", "Clinic.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clinic.Infrastructure", "Clinic.Infrastructure\Clinic.Infrastructure.csproj", "{6A9C5857-D137-4CFB-9EDB-79C4EBD407FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Clinic.Application", "Clinic.Application\Clinic.Application.csproj", "{8306D6C9-E9EF-4EB8-9A3B-FEA8EC619478}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clinic.Application", "Clinic.Application\Clinic.Application.csproj", "{8306D6C9-E9EF-4EB8-9A3B-FEA8EC619478}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Clinic.API", "Clinic.API\Clinic.API.csproj", "{28E41AE5-344F-4D6C-BC79-E164EBF27D84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clinic.API.Host", "Clinic.API.Host\Clinic.API.Host.csproj", "{28E41AE5-344F-4D6C-BC79-E164EBF27D84}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

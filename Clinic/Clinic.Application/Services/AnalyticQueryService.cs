@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Clinic.Application.Services;
-using Clinic.Application.DTOs;
 using Clinic.Domain.Models;
 
 using Clinic.Infrastructure.Repositories;
+using Clinic.Application.DTOs.Analytics;
 
 /// <summary>
 /// Implementation of clinic query service.

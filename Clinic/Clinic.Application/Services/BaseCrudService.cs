@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Clinic.Infrastructure.Repositories;
-using Clinic.Domain.Models;
 
 namespace Clinic.Application.Services;
 
@@ -17,11 +16,9 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
         IRepository<TModel> repository,
         IMapper mapper
     )
-    : ICrudService<TDto, TCreateDto, TUpdateDto>
-    where TModel : Model
-    where TDto : class
-    where TCreateDto : class
-    where TUpdateDto : class
+
+    : ICrudService<TDto, TCreateDto, TUpdateDto> 
+    where TDto : class?
 {
     protected readonly IRepository<TModel> _repository = repository;
     protected readonly IMapper _mapper = mapper;

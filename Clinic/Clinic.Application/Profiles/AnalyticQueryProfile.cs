@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Clinic.Application.DTOs;
+using Clinic.Application.DTOs.Analytics;
 
 namespace Clinic.Application.Profiles;
 

@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using Clinic.Domain.Models;
-using Clinic.Application.DTOs;
+using Clinic.Application.DTOs.Appointments;
+using Clinic.Application.DTOs.Doctors;
+using Clinic.Application.DTOs.Patients;
+using Clinic.Application.DTOs.Specializations;
 
 namespace Clinic.Application.Profiles;
 
