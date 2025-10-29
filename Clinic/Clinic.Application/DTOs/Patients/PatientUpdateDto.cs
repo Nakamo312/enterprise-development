@@ -55,7 +55,7 @@ public class PatientUpdateDto
     /// <summary>
     /// Contact phone number of the patient.
     /// </summary>
-    [RegularExpression(@"^+7 \d{3}-\d{2}-\d{2}$", ErrorMessage = "Phone number must be in the format '+7 (XXX) XXX-XX-XX'")]
+    [RegularExpression(@"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$", ErrorMessage = "Phone number must be in the format '+7 (XXX) XXX-XX-XX'")]
     [StringLength(20, ErrorMessage = "Phone number must not exceed 20 characters")]
     public string? ContactPhone { get; set; }
 }
