@@ -10,6 +10,7 @@ using Clinic.Application.Profiles;
 using Clinic.Application.Services;
 using Clinic.Api.Middleware;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,18 @@ builder.Services.Configure<RouteOptions>(options =>
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
 });
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var response = new
+            {
+                error = "Invalid request payload."
+            };
+            return new BadRequestObjectResult(response);
+        };
+    });
 
 builder.Services.AddControllers().AddJsonOptions(opts =>
 {
