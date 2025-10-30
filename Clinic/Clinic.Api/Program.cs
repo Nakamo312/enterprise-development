@@ -10,7 +10,6 @@ using Clinic.Application.Profiles;
 using Clinic.Application.Services;
 using Clinic.Api.Middleware;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 

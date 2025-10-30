@@ -129,18 +129,21 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     /// <param name="id">The ID of the entity to delete</param>
     /// <returns>No content if successful</returns>
     /// <response code="204">If the deletion was successful</response>
-    /// <response code="404">If the entity with the specified ID was not found</response>
+    /// <response code="204">If the entity with the specified ID was not found</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpDelete("{id:int}")]
     [ProducesResponseType(204)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(204)]
     [ProducesResponseType(500)]
     public virtual async Task<ActionResult> Delete(uint id)
     {
         try
         {
             var deleted = await service.DeleteAsync(id);
-            if (!deleted) return NotFound();
+            if (deleted == true)
+            {
+                return Ok();
+            }
 
             return NoContent();
         }
