@@ -353,7 +353,7 @@ public static class DataSeed
             Id = 1,
             PatientId = 1,
             DoctorId = 1,
-            DateTime = new DateTime(2025, 10, 6, 9, 0, 0),
+            DateTime = new DateTime(2025, 10, 6, 9, 0, 0, DateTimeKind.Utc),
             RoomNumber = "101",
             IsRepeated = false
         },
@@ -362,7 +362,7 @@ public static class DataSeed
             Id = 2,
             PatientId = 2,
             DoctorId = 2,
-            DateTime = new DateTime(2025, 10, 11, 10, 0, 0),
+            DateTime = new DateTime(2025, 10, 11, 10, 0, 0, DateTimeKind.Utc),
             RoomNumber = "102",
             IsRepeated = true
         },
@@ -371,7 +371,7 @@ public static class DataSeed
             Id = 3,
             PatientId = 3,
             DoctorId = 3,
-            DateTime = new DateTime(2025, 9, 26, 11, 0, 0),
+            DateTime = new DateTime(2025, 9, 26, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "103",
             IsRepeated = false
         },
@@ -380,7 +380,7 @@ public static class DataSeed
             Id = 4,
             PatientId = 4,
             DoctorId = 4,
-            DateTime = new DateTime(2025, 9, 25, 11, 0, 0),
+            DateTime = new DateTime(2025, 9, 25, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "104",
             IsRepeated = true
         },
@@ -389,7 +389,7 @@ public static class DataSeed
             Id = 5,
             PatientId = 5,
             DoctorId = 5,
-            DateTime = new DateTime(2025, 9, 24, 11, 0, 0),
+            DateTime = new DateTime(2025, 9, 24, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "105",
             IsRepeated = false
         },
@@ -398,7 +398,7 @@ public static class DataSeed
             Id = 6,
             PatientId = 6,
             DoctorId = 1,
-            DateTime = new DateTime(2025, 10, 26, 11, 0, 0),
+            DateTime = new DateTime(2025, 10, 26, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "101",
             IsRepeated = true
         },
@@ -407,7 +407,7 @@ public static class DataSeed
             Id = 7,
             PatientId = 7,
             DoctorId = 2,
-            DateTime = new DateTime(2025, 9, 20, 11, 0, 0),
+            DateTime = new DateTime(2025, 9, 20, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "102",
             IsRepeated = false
         },
@@ -416,7 +416,7 @@ public static class DataSeed
             Id = 8,
             PatientId = 8,
             DoctorId = 3,
-            DateTime = new DateTime(2025, 7, 6, 11, 0, 0),
+            DateTime = new DateTime(2025, 7, 6, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "103",
             IsRepeated = true
         },
@@ -425,7 +425,7 @@ public static class DataSeed
             Id = 9,
             PatientId = 9,
             DoctorId = 4,
-            DateTime = new DateTime(2025, 7, 11, 11, 0, 0),
+            DateTime = new DateTime(2025, 7, 11, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "104",
             IsRepeated = false
         },
@@ -434,7 +434,7 @@ public static class DataSeed
             Id = 10,
             PatientId = 10,
             DoctorId = 5,
-            DateTime = new DateTime(2025, 8, 22, 11, 0, 0),
+            DateTime = new DateTime(2025, 8, 22, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "105",
             IsRepeated = true
         },
@@ -443,7 +443,7 @@ public static class DataSeed
             Id = 11,
             PatientId = 1,
             DoctorId = 2,
-            DateTime = new DateTime(2025, 11, 15, 11, 0, 0),
+            DateTime = new DateTime(2025, 11, 15, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "102",
             IsRepeated = true
         },
@@ -452,7 +452,7 @@ public static class DataSeed
             Id = 12,
             PatientId = 2,
             DoctorId = 3,
-            DateTime = new DateTime(2025, 3, 3, 11, 0, 0),
+            DateTime = new DateTime(2025, 3, 3, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "103",
             IsRepeated = false
         },
@@ -461,7 +461,7 @@ public static class DataSeed
             Id = 13,
             PatientId = 3,
             DoctorId = 4,
-            DateTime = new DateTime(2024, 9, 26, 11, 0, 0),
+            DateTime = new DateTime(2024, 9, 26, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "104",
             IsRepeated = true
         },
@@ -470,7 +470,7 @@ public static class DataSeed
             Id = 14,
             PatientId = 4,
             DoctorId = 5,
-            DateTime = new DateTime(2023, 9, 26, 11, 0, 0),
+            DateTime = new DateTime(2023, 9, 26, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "105",
             IsRepeated = false
         },
@@ -479,7 +479,7 @@ public static class DataSeed
             Id = 15,
             PatientId = 5,
             DoctorId = 1,
-            DateTime = new DateTime(2025, 4, 29, 11, 0, 0),
+            DateTime = new DateTime(2025, 4, 29, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "101",
             IsRepeated = true
         },
@@ -488,7 +488,7 @@ public static class DataSeed
             Id = 16,
             PatientId = 11,
             DoctorId = 6,
-            DateTime = new DateTime(2024, 4, 29, 11, 0, 0),
+            DateTime = new DateTime(2024, 4, 29, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "106",
             IsRepeated = false
         },
@@ -497,7 +497,7 @@ public static class DataSeed
             Id = 17,
             PatientId = 12,
             DoctorId = 7,
-            DateTime = new DateTime(2025, 11, 28, 11, 0, 0),
+            DateTime = new DateTime(2025, 11, 28, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "107",
             IsRepeated = true
         },
@@ -506,7 +506,7 @@ public static class DataSeed
             Id = 18,
             PatientId = 13,
             DoctorId = 8,
-            DateTime = new DateTime(2025, 10, 16, 11, 0, 0),
+            DateTime = new DateTime(2025, 10, 16, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "108",
             IsRepeated = false
         },
@@ -515,7 +515,7 @@ public static class DataSeed
             Id = 19,
             PatientId = 14,
             DoctorId = 9,
-            DateTime = new DateTime(2025, 10, 3, 11, 0, 0),
+            DateTime = new DateTime(2025, 10, 3, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "109",
             IsRepeated = true
         },
@@ -524,7 +524,7 @@ public static class DataSeed
             Id = 20,
             PatientId = 15,
             DoctorId = 10,
-            DateTime = new DateTime(2024, 10, 16, 11, 0, 0),
+            DateTime = new DateTime(2024, 10, 16, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "110",
             IsRepeated = false
         },
@@ -533,7 +533,7 @@ public static class DataSeed
             Id = 21,
             PatientId = 6,
             DoctorId = 11,
-            DateTime = new DateTime(2025, 8, 25, 11, 0, 0),
+            DateTime = new DateTime(2025, 8, 25, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "111",
             IsRepeated = true
         },
@@ -542,7 +542,7 @@ public static class DataSeed
             Id = 22,
             PatientId = 7,
             DoctorId = 12,
-            DateTime = new DateTime(2025, 4, 17, 11, 0, 0),
+            DateTime = new DateTime(2025, 4, 17, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "112",
             IsRepeated = false
         },
@@ -551,7 +551,7 @@ public static class DataSeed
             Id = 23,
             PatientId = 8,
             DoctorId = 1,
-            DateTime = new DateTime(2025, 11, 23, 11, 0, 0),
+            DateTime = new DateTime(2025, 11, 23, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "101",
             IsRepeated = true
         },
@@ -560,7 +560,7 @@ public static class DataSeed
             Id = 24,
             PatientId = 9,
             DoctorId = 2,
-            DateTime = new DateTime(2025, 11, 1, 11, 0, 0),
+            DateTime = new DateTime(2025, 11, 1, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "102",
             IsRepeated = false
         },
@@ -569,7 +569,7 @@ public static class DataSeed
             Id = 25,
             PatientId = 10,
             DoctorId = 3,
-            DateTime = new DateTime(2024, 11, 1, 11, 0, 0),
+            DateTime = new DateTime(2024, 11, 1, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "103",
             IsRepeated = true
         },
@@ -578,7 +578,7 @@ public static class DataSeed
             Id = 26,
             PatientId = 11,
             DoctorId = 4,
-            DateTime = new DateTime(2025, 10, 13, 11, 0, 0),
+            DateTime = new DateTime(2025, 10, 13, 11, 0, 0, DateTimeKind.Utc),
             RoomNumber = "104",
             IsRepeated = false
         },
@@ -587,7 +587,7 @@ public static class DataSeed
             Id = 27,
             PatientId = 12,
             DoctorId = 5,
-            DateTime = new DateTime(2025, 10, 13, 12, 0, 0),
+            DateTime = new DateTime(2025, 10, 13, 12, 0, 0, DateTimeKind.Utc),
             RoomNumber = "105",
             IsRepeated = true
         },
@@ -596,7 +596,7 @@ public static class DataSeed
             Id = 28,
             PatientId = 13,
             DoctorId = 6,
-            DateTime = new DateTime(2025, 10, 13, 13, 0, 0),
+            DateTime = new DateTime(2025, 10, 13, 13, 0, 0, DateTimeKind.Utc),
             RoomNumber = "106",
             IsRepeated = false
         },
@@ -605,7 +605,7 @@ public static class DataSeed
             Id = 29,
             PatientId = 14,
             DoctorId = 7,
-            DateTime = new DateTime(2025, 10, 13, 14, 0, 0),
+            DateTime = new DateTime(2025, 10, 13, 14, 0, 0, DateTimeKind.Utc),
             RoomNumber = "107",
             IsRepeated = true
         },
@@ -614,7 +614,7 @@ public static class DataSeed
             Id = 30,
             PatientId = 15,
             DoctorId = 8,
-            DateTime = new DateTime(2024, 10, 13, 15, 0, 0),
+            DateTime = new DateTime(2024, 10, 13, 15, 0, 0, DateTimeKind.Utc),
             RoomNumber = "108",
             IsRepeated = false
         }

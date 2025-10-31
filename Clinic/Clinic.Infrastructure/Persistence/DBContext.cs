@@ -1,4 +1,5 @@
 ﻿using Clinic.Domain.Models;
+using Clinic.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Clinic.Infrastructure.Persistence;
@@ -56,6 +57,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.BloodGroup).IsRequired().HasConversion<string>();
             entity.Property(e => e.Gender).IsRequired().HasConversion<string>();
             entity.Property(e => e.RhFactor).IsRequired().HasConversion<string>();
+            entity.HasData(DataSeed.Patients);
         });
 
         modelBuilder.Entity<Doctor>(entity =>
@@ -71,6 +73,7 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(d => d.SpecializationId)
                 .OnDelete(DeleteBehavior.Restrict);
+            entity.HasData(DataSeed.Doctors);
         });
 
         modelBuilder.Entity<Specialization>(entity =>
@@ -78,6 +81,7 @@ public class AppDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.HasData(DataSeed.Specializations);
         });
 
         modelBuilder.Entity<Appointment>(entity =>
@@ -99,6 +103,7 @@ public class AppDbContext : DbContext
 
             entity.Property(e => e.PatientId).IsRequired();
             entity.Property(e => e.DoctorId).IsRequired();
+            entity.HasData(DataSeed.Appointments);
         });
     }
 }
