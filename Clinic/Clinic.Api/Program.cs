@@ -40,6 +40,8 @@ builder.Services.AddAutoMapper(config =>
     config.AddProfile(new MappingProfile());
 });
 
+builder.Services.AddSingleton<Clinic.Domain.Data.DataSeed>();
+
 builder.Services.AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
 
 builder.Services.AddScoped<ICrudService<PatientResponseDto, PatientCreateDto, PatientUpdateDto>, PatientService>();
