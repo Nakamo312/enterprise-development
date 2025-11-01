@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Clinic.Infrastructure.Repositories;
+using Clinic.Infrastructure.Repositories.Interfaces;
 
 namespace Clinic.Application.Services;
 

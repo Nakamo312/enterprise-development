@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Clinic.Application.Dtos.Patients;
 using Clinic.Domain.Models;
-using Clinic.Infrastructure.Repositories;
+using Clinic.Infrastructure.Repositories.Interfaces;
 
 namespace Clinic.Application.Services;
 
