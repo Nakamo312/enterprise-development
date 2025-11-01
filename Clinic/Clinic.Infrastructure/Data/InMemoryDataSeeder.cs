@@ -1,6 +1,7 @@
-﻿using Clinic.Infrastructure.Data.Interfaces;
-using Clinic.Domain.Models;
-using Clinic.Infrastructure.Repositories;
+﻿using Clinic.Domain.Models;
+using Clinic.Domain.Data;
+using Clinic.Infrastructure.Data.Interfaces;
+using Clinic.Infrastructure.Repositories.Interfaces;
 
 namespace Clinic.Infrastructure.Data;
 
@@ -12,7 +13,8 @@ public class InMemoryDataSeeder(
         IRepository<Patient> patientRepository,
         IRepository<Doctor> doctorRepository,
         IRepository<Specialization> specializationRepository,
-        IRepository<Appointment> appointmentRepository
+        IRepository<Appointment> appointmentRepository,
+        DataSeed data
     ) : IDataSeeder
 {
     /// <summary>
@@ -22,25 +24,10 @@ public class InMemoryDataSeeder(
     public async Task SeedAsync()
     {
 
-        foreach (var patient in DataSeed.Patients)
-        {
-            await patientRepository.CreateAsync(patient);
-        }
-
-        foreach (var specialization in DataSeed.Specializations)
-        {
-            await specializationRepository.CreateAsync(specialization);
-        }
-
-        foreach (var doctor in DataSeed.Doctors)
-        {
-            await doctorRepository.CreateAsync(doctor);
-        }
-
-        foreach (var appointment in DataSeed.Appointments)
-        {
-            await appointmentRepository.CreateAsync(appointment);
-        }
+        data.Patients.ForEach(p => patientRepository.CreateAsync(p));
+        data.Specializations.ForEach(s => specializationRepository.CreateAsync(s));
+        data.Doctors.ForEach(d => doctorRepository.CreateAsync(d));
+        data.Appointments.ForEach(a => appointmentRepository.CreateAsync(a));
     }
 
     /// <summary>

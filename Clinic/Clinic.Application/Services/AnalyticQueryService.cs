@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
-using Clinic.Application.Services;
 using Clinic.Domain.Models;
-using Clinic.Infrastructure.Repositories;
-using Clinic.Application.Dtos.Analytics;
+using Clinic.Infrastructure.Repositories.Interfaces;
+using Clinic.Application.Dtos.Appointments;
 using Clinic.Application.Dtos.Doctors;
 using Clinic.Application.Dtos.Patients;
+
+namespace Clinic.Application.Services;
 
 /// <summary>
 /// Implementation of clinic query service.
@@ -65,17 +66,16 @@ public class AnalyticQueryService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<uint>> GetRepeatedAppointmentsAsync(DateTime startDate, DateTime endDate)
+    public async Task<IEnumerable<AppointmentResponseDto>> GetRepeatedAppointmentsAsync(DateTime startDate, DateTime endDate)
     {
         try
         {
             var appointments = await appointmentRepository.GetAsync();
-            var ids = appointments
+            var result = appointments
                 .Where(a => a.IsRepeated && a.DateTime >= startDate && a.DateTime <= endDate)
-                .Select(a => a.Id)
                 .ToList();
 
-            return ids;
+            return mapper.Map<List<AppointmentResponseDto>>(result);
         }
         catch (Exception ex)
         {
@@ -109,21 +109,24 @@ public class AnalyticQueryService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<uint>> GetAppointmentsForRoomThisMonthAsync(RoomAppointmentsQueryDto queryDto)
+    public async Task<IEnumerable<AppointmentResponseDto>> GetAppointmentsForRoomThisMonthAsync(string roomNumber)
     {
         try
         {
+            var today = DateTime.Today;
+            var monthStart = new DateTime(today.Year, today.Month, 1);
+            var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+
             var appointments = await appointmentRepository.GetAsync();
-            var ids = appointments
-                .Where(a => a.DateTime.Date >= queryDto.MonthStart && a.DateTime.Date <= queryDto.MonthEnd && a.RoomNumber == queryDto.RoomNumber)
-                .Select(a => a.Id)
+            var result = appointments
+                .Where(a => a.DateTime.Date >= monthStart && a.DateTime.Date <= monthEnd && a.RoomNumber == roomNumber)
                 .ToList();
 
-            return ids;
+            return mapper.Map<List<AppointmentResponseDto>>(result);
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to retrieve appointments for room {queryDto.RoomNumber}", ex);
+            throw new InvalidOperationException($"Failed to retrieve appointments for room {roomNumber}", ex);
         }
     }
 }

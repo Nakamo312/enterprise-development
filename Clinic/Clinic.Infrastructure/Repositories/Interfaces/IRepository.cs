@@ -1,4 +1,4 @@
-﻿namespace Clinic.Infrastructure.Repositories;
+﻿namespace Clinic.Infrastructure.Repositories.Interfaces;
 
 /// Generic repository interface for performing CRUD operations on domain
 /// <summary> entities.

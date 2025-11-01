@@ -1,4 +1,4 @@
-﻿namespace Clinic.Domain.Models;
+﻿namespace Clinic.Domain.Abstract.Models;
 
 /// <summary>
 /// Defines a base model interface with a unique identifier.

@@ -1,18 +1,18 @@
 ﻿using Clinic.Domain.Enums;
 using Clinic.Domain.Models;
 
-namespace Clinic.Infrastructure.Data;
+namespace Clinic.Domain.Data;
 
 /// <summary>
 /// Provides seed data for the Clinic domain entities.
 /// This class contains initial data for database seeding and testing purposes.
 /// </summary>
-public static class DataSeed
+public class DataSeed
 {
     /// <summary>
     /// Gets the list of patients for seeding.
     /// </summary>
-    public static List<Patient> Patients { get; } =
+    public List<Patient> Patients { get; } =
     [
         new()
         {
@@ -199,7 +199,7 @@ public static class DataSeed
     /// <summary>
     /// Gets the list of doctors for seeding.
     /// </summary>
-    public static List<Doctor> Doctors { get; } =
+    public List<Doctor> Doctors { get; } =
     [
         new()
         {
@@ -314,7 +314,7 @@ public static class DataSeed
     /// <summary>
     /// Gets the list of specializations for seeding.
     /// </summary>
-    public static List<Specialization> Specializations { get; } =
+    public List<Specialization> Specializations { get; } =
     [
         new()
         {
@@ -346,7 +346,7 @@ public static class DataSeed
     /// <summary>
     /// Gets the list of appointments for seeding.
     /// </summary>
-    public static List<Appointment> Appointments { get; } =
+    public List<Appointment> Appointments { get; } =
     [
         new()
         {

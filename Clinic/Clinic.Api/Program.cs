@@ -1,14 +1,15 @@
-﻿using Microsoft.OpenApi.Models;
-using Clinic.Infrastructure.Repositories;
-using Clinic.Infrastructure.Data.Interfaces;
-using Clinic.Infrastructure.Data;
+﻿using Clinic.Api.Middleware;
 using Clinic.Application.Dtos.Appointments;
 using Clinic.Application.Dtos.Doctors;
 using Clinic.Application.Dtos.Patients;
 using Clinic.Application.Dtos.Specializations;
 using Clinic.Application.Profiles;
 using Clinic.Application.Services;
-using Clinic.Api.Middleware;
+using Clinic.Infrastructure.Data;
+using Clinic.Infrastructure.Data.Interfaces;
+using Clinic.Infrastructure.Repositories;
+using Clinic.Infrastructure.Repositories.Interfaces;
+using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);

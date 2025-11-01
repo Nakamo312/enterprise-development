@@ -1,4 +1,6 @@
-﻿namespace Clinic.Domain.Models;
+﻿using Clinic.Domain.Abstract.Models;
+
+namespace Clinic.Domain.Models;
 
 /// <summary>
 /// Represents an appointment in the medical clinic.

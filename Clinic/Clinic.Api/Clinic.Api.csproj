@@ -17,8 +17,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Clinic.Application\Clinic.Application.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Middleware\" />
-  </ItemGroup>
 </Project>
