@@ -23,11 +23,14 @@ public class InMemoryDataSeeder(
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task SeedAsync()
     {
-
-        data.Patients.ForEach(p => patientRepository.CreateAsync(p));
-        data.Specializations.ForEach(s => specializationRepository.CreateAsync(s));
-        data.Doctors.ForEach(d => doctorRepository.CreateAsync(d));
-        data.Appointments.ForEach(a => appointmentRepository.CreateAsync(a));
+        await Task.Run(() =>
+        {
+            data.Patients.ForEach(p => patientRepository.CreateAsync(p));
+            data.Specializations.ForEach(s => specializationRepository.CreateAsync(s));
+            data.Doctors.ForEach(d => doctorRepository.CreateAsync(d));
+            data.Appointments.ForEach(a => appointmentRepository.CreateAsync(a));
+        });
+        
     }
 
     /// <summary>
