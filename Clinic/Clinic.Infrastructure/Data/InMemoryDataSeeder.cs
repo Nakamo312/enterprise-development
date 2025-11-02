@@ -23,17 +23,14 @@ public class InMemoryDataSeeder(
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task SeedAsync()
     {
-        var patientTasks = data.Patients.Select(p => patientRepository.CreateAsync(p)).ToList();
-        await Task.WhenAll(patientTasks);
+        var tasks = new List<Task>();
 
-        var specializationTasks = data.Specializations.Select(s => specializationRepository.CreateAsync(s)).ToList();
-        await Task.WhenAll(specializationTasks);
+        data.Patients.ForEach(p => tasks.Add(patientRepository.CreateAsync(p)));
+        data.Specializations.ForEach(s => tasks.Add(specializationRepository.CreateAsync(s)));
+        data.Doctors.ForEach( d=> tasks.Add(doctorRepository.CreateAsync(d)));
+        data.Appointments.ForEach(a => tasks.Add(appointmentRepository.CreateAsync(a)));
 
-        var doctorTasks = data.Doctors.Select(d => doctorRepository.CreateAsync(d)).ToList();
-        await Task.WhenAll(doctorTasks);
-
-        var appointmentTasks = data.Appointments.Select(a => appointmentRepository.CreateAsync(a)).ToList();
-        await Task.WhenAll(appointmentTasks);
+        await Task.WhenAll(tasks);
     }
 
     /// <summary>
@@ -42,20 +39,18 @@ public class InMemoryDataSeeder(
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task ClearAsync()
     {
-        var patients = (await patientRepository.GetAsync()).ToList();
-        var patientDeleteTasks = patients.Select(p => patientRepository.DeleteAsync(p.Id)).ToList();
-        await Task.WhenAll(patientDeleteTasks);
+        var tasks = new List<Task>();
 
-        var appointments = (await appointmentRepository.GetAsync()).ToList();
-        var appointmentDeleteTasks = appointments.Select(a => appointmentRepository.DeleteAsync(a.Id)).ToList();
-        await Task.WhenAll(appointmentDeleteTasks);
+        var patients = await patientRepository.GetAsync();
+        var appointments = await appointmentRepository.GetAsync();
+        var doctors = await doctorRepository.GetAsync();
+        var specializations = await specializationRepository.GetAsync();
 
-        var doctors = (await doctorRepository.GetAsync()).ToList();
-        var doctorDeleteTasks = doctors.Select(d => doctorRepository.DeleteAsync(d.Id)).ToList();
-        await Task.WhenAll(doctorDeleteTasks);
+        appointments.ToList().ForEach(a => tasks.Add(appointmentRepository.DeleteAsync(a.Id)));
+        doctors.ToList().ForEach(d => tasks.Add(doctorRepository.DeleteAsync(d.Id)));
+        patients.ToList().ForEach(p => tasks.Add(patientRepository.DeleteAsync(p.Id)));
+        specializations.ToList().ForEach(s => tasks.Add(specializationRepository.DeleteAsync(s.Id)));
 
-        var specializations = (await specializationRepository.GetAsync()).ToList();
-        var specializationDeleteTasks = specializations.Select(s => specializationRepository.DeleteAsync(s.Id)).ToList();
-        await Task.WhenAll(specializationDeleteTasks);
+        await Task.WhenAll(tasks);
     }
 }

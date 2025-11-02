@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Clinic.Infrastructure.Repositories.Interfaces;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace Clinic.Application.Services;
 
@@ -90,22 +92,7 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
         {
             var entity = await repository.GetAsync(id);
             if (entity == null) return null;
-
-            var dtoProperties = typeof(TUpdateDto).GetProperties();
-            var entityProperties = typeof(TModel).GetProperties();
-
-            foreach (var dtoProp in dtoProperties)
-            {
-                var dtoValue = dtoProp.GetValue(updateDto);
-                if (dtoValue == null) continue;
-
-                var entityProp = entityProperties.FirstOrDefault(p => p.Name == dtoProp.Name);
-                if (entityProp != null && entityProp.CanWrite)
-                {
-                    entityProp.SetValue(entity, dtoValue);
-                }
-            }
-
+            mapper.Map(updateDto, entity);
             await repository.UpdateAsync(entity);
             return mapper.Map<TDto>(entity);
         }

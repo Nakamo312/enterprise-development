@@ -68,23 +68,16 @@ public class AppointmentsController
         try
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            if (updateDto.PatientId.HasValue)
+            var patient = await patientService.GetAsync(updateDto.PatientId);
+            if (patient == null)
             {
-                var patient = await patientService.GetAsync(updateDto.PatientId.Value);
-                if (patient == null)
-                {
-                    return BadRequest(new { error = $"Patient with ID {updateDto.PatientId} does not exist" });
-                }
+                return BadRequest(new { error = $"Patient with ID {updateDto.PatientId} does not exist" });
             }
+            var doctor = await doctorService.GetAsync(updateDto.DoctorId);
 
-            if (updateDto.DoctorId.HasValue)
+            if (doctor == null)
             {
-                var doctor = await doctorService.GetAsync(updateDto.DoctorId.Value);
-                if (doctor == null)
-                {
-                    return BadRequest(new { error = $"Doctor with ID {updateDto.DoctorId} does not exist" });
-                }
+                return BadRequest(new { error = $"Doctor with ID {updateDto.DoctorId} does not exist" });
             }
 
             var updatedEntity = await service.UpdateAsync(id, updateDto);

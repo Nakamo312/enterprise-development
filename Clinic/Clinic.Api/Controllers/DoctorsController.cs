@@ -60,13 +60,10 @@ public class DoctorsController
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            if (updateDto.SpecializationId.HasValue)
+            var specialization = await specializationService.GetAsync(updateDto.SpecializationId);
+            if (specialization == null)
             {
-                var specialization = await specializationService.GetAsync(updateDto.SpecializationId.Value);
-                if (specialization == null)
-                {
-                    return BadRequest(new { error = $"Specialization with ID {updateDto.SpecializationId} does not exist" });
-                }
+                return BadRequest(new { error = $"Specialization with ID {updateDto.SpecializationId} does not exist" });
             }
 
             var updatedEntity = await service.UpdateAsync(id, updateDto);
