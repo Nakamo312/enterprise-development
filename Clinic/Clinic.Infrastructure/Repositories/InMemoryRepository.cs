@@ -1,4 +1,4 @@
-﻿using Clinic.Domain.Abstract.Models;
+﻿using Clinic.Domain.Models.Abstract;
 using Clinic.Infrastructure.Repositories.Interfaces;
 
 namespace Clinic.Infrastructure.Repositories;

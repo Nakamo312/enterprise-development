@@ -1,4 +1,4 @@
-﻿using Clinic.Domain.Abstract.Models;
+﻿using Clinic.Domain.Models.Abstract;
 using Clinic.Infrastructure.Repositories.Interfaces;
 using Clinic.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

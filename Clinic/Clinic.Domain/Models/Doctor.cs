@@ -1,4 +1,4 @@
-﻿using Clinic.Domain.Abstract.Models;
+﻿using Clinic.Domain.Models.Abstract;
 
 namespace Clinic.Domain.Models;
 
