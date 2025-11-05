@@ -1,4 +1,6 @@
-﻿namespace Clinic.Domain.Models;
+﻿using Clinic.Domain.Models.Abstract;
+
+namespace Clinic.Domain.Models;
 
 /// <summary>
 /// Represents a doctor in the medical clinic.
@@ -23,7 +25,7 @@ public class Doctor : Model
     /// <summary>
     /// Specialization of the doctor.
     /// </summary>
-    public required uint SpecializationId { get; set; }
+    public required Guid SpecializationId { get; set; }
 
     /// <summary>
     /// Work experience (in years) of the doctor.

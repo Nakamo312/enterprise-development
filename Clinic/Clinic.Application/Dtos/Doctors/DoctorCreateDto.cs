@@ -1,41 +1,45 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace Clinic.Application.Dtos.Doctors;
 
 /// <summary>
-/// Data transfer object for updating an existing doctor.
+/// Data transfer object for creating a new doctor.
 /// </summary>
-public class DoctorUpdateDto
+public class DoctorCreateDto
 {
     /// <summary>
     /// Passport number of the doctor.
     /// </summary>
+    [Required(ErrorMessage = "Passport number is required")]
     [RegularExpression(@"^\d{4}\s\d{6}$", ErrorMessage = "Passport number must be in format: XXXX XXXXXX")]
-    public string? PassportNumber { get; set; }
+    public required string PassportNumber { get; set; }
 
     /// <summary>
     /// Full name of the doctor.
     /// </summary>
+    [Required(ErrorMessage = "Full name is required")]
     [StringLength(100, MinimumLength = 2, ErrorMessage = "Full name must be between 2 and 100 characters")]
-    public string? FullName { get; set; }
+    public required string FullName { get; set; }
 
     /// <summary>
     /// Year of birth of the doctor.
     /// </summary>
     [DefaultValue(1990)]
+    [Required(ErrorMessage = "Year of birth is required")]
     [Range(1900, 2100, ErrorMessage = "Year of birth must be between 1900 and 2100")]
-    public uint? YearOfBirth { get; set; }
+    public required uint YearOfBirth { get; set; }
 
     /// <summary>
     /// Specialization of the doctor.
     /// </summary>
-    public uint? SpecializationId { get; set; }
+    [Required(ErrorMessage = "Specialization is required")]
+    public required Guid SpecializationId { get; set; }
 
     /// <summary>
     /// Work experience (in years) of the doctor.
     /// </summary>
     [DefaultValue(0)]
     [Range(0, 100, ErrorMessage = "Experience must be between 0 and 100 years")]
-    public uint? Experience { get; set; }
+    public int? Experience { get; set; }
 }

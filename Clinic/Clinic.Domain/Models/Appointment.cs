@@ -1,4 +1,7 @@
-﻿namespace Clinic.Domain.Models;
+﻿using Clinic.Domain.Models.Abstract;
+using System;
+
+namespace Clinic.Domain.Models;
 
 /// <summary>
 /// Represents an appointment in the medical clinic.
@@ -23,10 +26,10 @@ public class Appointment : Model
     /// <summary>
     /// Patient associated with the appointment.
     /// </summary>
-    public required uint PatientId { get; set; }
+    public required Guid PatientId { get; set; }
 
     /// <summary>
     /// Doctor associated with the appointment.
     /// </summary>
-    public required uint DoctorId { get; set; }
+    public required Guid DoctorId { get; set; }
 }

@@ -63,28 +63,21 @@ public class AppointmentsController
     /// <response code="400">If the request data is invalid or patient/doctor does not exist</response>
     /// <response code="404">If the appointment with the specified ID was not found</response>
     /// <response code="500">If there was an internal server error</response>
-    public override async Task<ActionResult> Update(uint id, [FromBody] AppointmentUpdateDto updateDto)
+    public override async Task<ActionResult> Update(Guid id, [FromBody] AppointmentUpdateDto updateDto)
     {
         try
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            if (updateDto.PatientId.HasValue)
+            var patient = await patientService.GetAsync(updateDto.PatientId);
+            if (patient == null)
             {
-                var patient = await patientService.GetAsync(updateDto.PatientId.Value);
-                if (patient == null)
-                {
-                    return BadRequest(new { error = $"Patient with ID {updateDto.PatientId} does not exist" });
-                }
+                return BadRequest(new { error = $"Patient with ID {updateDto.PatientId} does not exist" });
             }
+            var doctor = await doctorService.GetAsync(updateDto.DoctorId);
 
-            if (updateDto.DoctorId.HasValue)
+            if (doctor == null)
             {
-                var doctor = await doctorService.GetAsync(updateDto.DoctorId.Value);
-                if (doctor == null)
-                {
-                    return BadRequest(new { error = $"Doctor with ID {updateDto.DoctorId} does not exist" });
-                }
+                return BadRequest(new { error = $"Doctor with ID {updateDto.DoctorId} does not exist" });
             }
 
             var updatedEntity = await service.UpdateAsync(id, updateDto);

@@ -1,12 +1,12 @@
-﻿namespace Clinic.Tests;
+﻿using Clinic.Domain.Data;
+
+namespace Clinic.Tests;
 
 /// <summary>
 /// Tests for clinic functionalities.
 /// </summary>
-public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
+public class LinqQueryTests(DataSeed testData) : IClassFixture<DataSeed>
 {
-    private readonly DataFixture _testData = testData;
-
     /// <summary>
     /// Tests doctor experience filter.
     /// </summary>
@@ -25,7 +25,7 @@ public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
             "Смирнов Иван Петрович"
         };
 
-        var actualFullNames = _testData.Doctors
+        var actualFullNames = testData.Doctors
             .Where(d => d.Experience >= minExperience)
             .Select(d => d.FullName)
             .Order()
@@ -40,7 +40,7 @@ public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
     [Fact]
     public void GetPatientsByDoctorInfo()
     {
-        var targetDoctor = _testData.Doctors.First();
+        var targetDoctor = testData.Doctors.First();
         var doctorId = targetDoctor.Id;
 
         var expectedPatientsFullNames = new List<string>
@@ -51,10 +51,10 @@ public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
             "Морозова Анна Владимировна"
         };
 
-        var actualPatientsFullNames = _testData.Appointments
+        var actualPatientsFullNames = testData.Appointments
             .Where(a => a.DoctorId == doctorId)
             .Join(
-                _testData.Patients,
+                testData.Patients,
                 a => a.PatientId,
                 p => p.Id,
                 (a, p) => p
@@ -76,9 +76,16 @@ public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
         var endDate = new DateTime(2025, 10, 16);
         var startDate = new DateTime(2025, 9, 16);
 
-        var expectedAppointmentIds = new List<uint> { 2, 4, 19, 27, 29 };
+        var expectedAppointmentIds = new List<Guid>
+        {
+            Guid.Parse("40000000-0000-0000-0000-000000000002"),
+            Guid.Parse("40000000-0000-0000-0000-000000000004"),
+            Guid.Parse("40000000-0000-0000-0000-000000000019"),
+            Guid.Parse("40000000-0000-0000-0000-000000000027"),
+            Guid.Parse("40000000-0000-0000-0000-000000000029")
+        };
 
-        var actualAppointmentIds = _testData.Appointments
+        var actualAppointmentIds = testData.Appointments
             .Where(a => a.IsRepeated && a.DateTime >= startDate && a.DateTime <= endDate)
             .Select(a => a.Id)
             .ToList();
@@ -111,10 +118,10 @@ public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
             "Соколов Андрей Юрьевич"
         };
 
-        var actualPatientsFullNames = _testData.Appointments
+        var actualPatientsFullNames = testData.Appointments
             .GroupBy(a => a.PatientId)
             .Where(g => g.Select(a => a.DoctorId).Distinct().Count() > 1)
-            .Select(g => _testData.Patients.First(p => p.Id == g.Key))
+            .Select(g => testData.Patients.First(p => p.Id == g.Key))
             .Where(p => p.DateOfBirth < currentDate.AddYears(-30))
             .OrderBy(p => p.FullName)
             .Select(p => p.FullName)
@@ -133,9 +140,13 @@ public class LinqQueryTests(DataFixture testData) : IClassFixture<DataFixture>
         var thisMonthEnd = new DateTime(2025, 10, 31);
         const string selectedRoomNumber = "101";
 
-        var expectedAppointmentIds = new List<uint> { 1, 6 };
+        var expectedAppointmentIds = new List<Guid>
+        {
+            Guid.Parse("40000000-0000-0000-0000-000000000001"),
+            Guid.Parse("40000000-0000-0000-0000-000000000006")
+        };
 
-        var actualAppointmentIds = _testData.Appointments
+        var actualAppointmentIds = testData.Appointments
             .Where(a => a.DateTime.Date >= thisMonthStart && a.DateTime.Date <= thisMonthEnd && a.RoomNumber == selectedRoomNumber)
             .Select(a => a.Id)
             .ToList();

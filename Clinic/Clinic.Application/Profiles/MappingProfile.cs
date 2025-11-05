@@ -25,12 +25,25 @@ public class MappingProfile : Profile
 
         CreateMap<AppointmentCreateDto, Appointment>();
         CreateMap<DoctorCreateDto, Doctor>();
-        CreateMap<PatientCreateDto, Patient>();
+        CreateMap<PatientCreateDto, Patient>()
+            .ForMember(dest => dest.ContactPhone,
+                      opt => opt.MapFrom(src => NormalizePhone(src.ContactPhone)));
         CreateMap<SpecializationCreateDto, Specialization>();
 
         CreateMap<AppointmentUpdateDto, Appointment>();
         CreateMap<DoctorUpdateDto, Doctor>();
-        CreateMap<PatientUpdateDto, Patient>();
+        CreateMap<PatientUpdateDto, Patient>()
+            .ForMember(dest => dest.ContactPhone,
+                      opt => opt.MapFrom(src => NormalizePhone(src.ContactPhone)));
         CreateMap<SpecializationUpdateDto, Specialization>();
+    }
+
+    private static string? NormalizePhone(string? phone)
+    {
+        if (string.IsNullOrWhiteSpace(phone)) return null;
+
+        var digits = new string(phone.Where(char.IsDigit).ToArray());
+
+        return "8" + digits[1..];
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Clinic.Domain.Models;
+﻿namespace Clinic.Domain.Models.Abstract;
 
 /// <summary>
 /// Defines a base model interface with a unique identifier.
@@ -8,5 +8,5 @@ public abstract class Model
     /// <summary>
     /// Unique identifier of the data model.
     /// </summary>
-    public virtual uint Id { get; set; }
+    public virtual Guid Id { get; set; } = Guid.NewGuid();
 }

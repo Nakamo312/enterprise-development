@@ -1,4 +1,4 @@
-﻿using Clinic.Domain.Models;
+﻿using Clinic.Domain.Data;
 using Clinic.Infrastructure.Data.Interfaces;
 using Clinic.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,7 @@ namespace Clinic.Infrastructure.Data;
 /// Entity Framework data seeder that uses predefined data from DataSeed class.
 /// Provides methods for seeding and clearing database data.
 /// </summary>
-public class EfDataSeeder(AppDbContext context, ILogger<EfDataSeeder> logger) : IDataSeeder
+public class EfDataSeeder(AppDbContext context, ILogger<EfDataSeeder> logger, DataSeed data) : IDataSeeder
 {
     /// <summary>
     /// Seeds the database with initial test or development data.
@@ -67,9 +67,9 @@ public class EfDataSeeder(AppDbContext context, ILogger<EfDataSeeder> logger) : 
             return;
         }
 
-        logger.LogInformation("Seeding {Count} specializations", DataSeed.Specializations.Count);
+        logger.LogInformation("Seeding {Count} specializations", data.Specializations.Count);
 
-        foreach (var specialization in DataSeed.Specializations)
+        foreach (var specialization in data.Specializations)
         {
             var existing = await context.Specializations.FindAsync(specialization.Id);
             if (existing == null)
@@ -90,9 +90,9 @@ public class EfDataSeeder(AppDbContext context, ILogger<EfDataSeeder> logger) : 
             return;
         }
 
-        logger.LogInformation("Seeding {Count} doctors", DataSeed.Doctors.Count);
+        logger.LogInformation("Seeding {Count} doctors", data.Doctors.Count);
 
-        foreach (var doctor in DataSeed.Doctors)
+        foreach (var doctor in data.Doctors)
         {
             var existing = await context.Doctors.FindAsync(doctor.Id);
             if (existing == null)
@@ -121,9 +121,9 @@ public class EfDataSeeder(AppDbContext context, ILogger<EfDataSeeder> logger) : 
             return;
         }
 
-        logger.LogInformation("Seeding {Count} patients", DataSeed.Patients.Count);
+        logger.LogInformation("Seeding {Count} patients", data.Patients.Count);
 
-        foreach (var patient in DataSeed.Patients)
+        foreach (var patient in data.Patients)
         {
             var existing = await context.Patients.FindAsync(patient.Id);
             if (existing == null)
@@ -144,9 +144,9 @@ public class EfDataSeeder(AppDbContext context, ILogger<EfDataSeeder> logger) : 
             return;
         }
 
-        logger.LogInformation("Seeding {Count} appointments", DataSeed.Appointments.Count);
+        logger.LogInformation("Seeding {Count} appointments", data.Appointments.Count);
 
-        foreach (var appointment in DataSeed.Appointments)
+        foreach (var appointment in data.Appointments)
         {
             var existing = await context.Appointments.FindAsync(appointment.Id);
             if (existing == null)

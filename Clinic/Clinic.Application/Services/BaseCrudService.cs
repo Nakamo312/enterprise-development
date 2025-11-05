@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
-using Clinic.Infrastructure.Repositories;
+using Clinic.Infrastructure.Repositories.Interfaces;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace Clinic.Application.Services;
 
@@ -44,7 +46,7 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
     /// <param name="id">The ID of the entity to retrieve.</param>
     /// <returns>The entity DTO if found; otherwise, null.</returns>
     /// <exception cref="InvalidOperationException">Thrown when retrieval fails.</exception>
-    public virtual async Task<TDto?> GetAsync(uint id)
+    public virtual async Task<TDto?> GetAsync(Guid id)
     {
         try
         {
@@ -84,28 +86,13 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
     /// <param name="updateDto">The DTO containing updated data.</param>
     /// <returns>The updated entity as a DTO if successful; otherwise, null.</returns>
     /// <exception cref="InvalidOperationException">Thrown when update fails.</exception>
-    public virtual async Task<TDto?> UpdateAsync(uint id, TUpdateDto updateDto)
+    public virtual async Task<TDto?> UpdateAsync(Guid id, TUpdateDto updateDto)
     {
         try
         {
             var entity = await repository.GetAsync(id);
             if (entity == null) return null;
-
-            var dtoProperties = typeof(TUpdateDto).GetProperties();
-            var entityProperties = typeof(TModel).GetProperties();
-
-            foreach (var dtoProp in dtoProperties)
-            {
-                var dtoValue = dtoProp.GetValue(updateDto);
-                if (dtoValue == null) continue;
-
-                var entityProp = entityProperties.FirstOrDefault(p => p.Name == dtoProp.Name);
-                if (entityProp != null && entityProp.CanWrite)
-                {
-                    entityProp.SetValue(entity, dtoValue);
-                }
-            }
-
+            mapper.Map(updateDto, entity);
             await repository.UpdateAsync(entity);
             return mapper.Map<TDto>(entity);
         }
@@ -121,7 +108,7 @@ public class BaseCrudService<TModel, TDto, TCreateDto, TUpdateDto>
     /// <param name="id">The ID of the entity to delete.</param>
     /// <returns>True if the entity was successfully deleted; otherwise, false.</returns>
     /// <exception cref="InvalidOperationException">Thrown when deletion fails.</exception>
-    public virtual async Task<bool> DeleteAsync(uint id)
+    public virtual async Task<bool> DeleteAsync(Guid id)
     {
         try
         {

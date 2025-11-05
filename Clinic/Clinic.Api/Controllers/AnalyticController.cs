@@ -1,10 +1,10 @@
-using Clinic.Application.Dtos.Analytics;
+using Clinic.Application.Dtos.Appointments;
 using Clinic.Application.Dtos.Doctors;
 using Clinic.Application.Dtos.Patients;
 using Clinic.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Clinic.API.Host.Controllers;
+namespace Clinic.Api.Controllers;
 
 /// <summary>
 /// Controller for analytic queries and reports.
@@ -52,7 +52,7 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
     [ProducesResponseType(typeof(IEnumerable<PatientResponseDto>), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<IEnumerable<PatientResponseDto>>> GetPatientsByDoctor(uint doctorId)
+    public async Task<ActionResult<IEnumerable<PatientResponseDto>>> GetPatientsByDoctor(Guid doctorId)
     {
         try
         {
@@ -75,14 +75,20 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
     /// <response code="400">If the request data is invalid</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpGet("appointments/repeated")]
-    [ProducesResponseType(typeof(IEnumerable<uint>), 200)]
+    [ProducesResponseType(typeof(IEnumerable<AppointmentResponseDto>), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<IEnumerable<uint>>> GetRepeatedAppointments([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+    public async Task<ActionResult<IEnumerable<AppointmentResponseDto>>> GetRepeatedAppointments([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
         try
         {
-            var result = await analyticQueryService.GetRepeatedAppointmentsAsync(startDate, endDate);
+            if (!startDate.HasValue || !endDate.HasValue)
+            {
+                var today = DateTime.Today;
+                startDate = new DateTime(today.Year, today.Month, 1).AddMonths(-1);
+                endDate = startDate.Value.AddMonths(1).AddDays(-1);
+            }
+            var result = await analyticQueryService.GetRepeatedAppointmentsAsync(startDate.Value, endDate.Value);
             return Ok(result);
         }
         catch (InvalidOperationException)
@@ -116,22 +122,22 @@ public class AnalyticController(IAnalyticQueryService analyticQueryService) : Co
     /// <summary>
     /// Retrieves appointments for a specific room during the current month.
     /// </summary>
-    /// <param name="queryDto">Query parameters containing room number and date range</param>
+    /// <param name="roomNumber">Query parameters containing room number</param>
     /// <returns>Collection of appointment IDs for the specified room in current month</returns>
     /// <response code="200">Returns list of appointment IDs</response>
     /// <response code="400">If the request data is invalid</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpGet("appointments/room")]
-    [ProducesResponseType(typeof(IEnumerable<uint>), 200)]
+    [ProducesResponseType(typeof(IEnumerable<AppointmentResponseDto>), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<IEnumerable<uint>>> GetAppointmentsForRoom([FromQuery] RoomAppointmentsQueryDto queryDto)
+    public async Task<ActionResult<IEnumerable<AppointmentResponseDto>>> GetAppointmentsForRoom([FromQuery] string roomNumber)
     {
         try
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var result = await analyticQueryService.GetAppointmentsForRoomThisMonthAsync(queryDto);
+            var result = await analyticQueryService.GetAppointmentsForRoomThisMonthAsync(roomNumber);
             return Ok(result);
         }
         catch (InvalidOperationException)

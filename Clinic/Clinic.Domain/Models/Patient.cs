@@ -1,4 +1,5 @@
-﻿using Clinic.Domain.Enums;
+﻿using Clinic.Domain.Models.Abstract;
+using Clinic.Domain.Enums;
 
 namespace Clinic.Domain.Models;
 

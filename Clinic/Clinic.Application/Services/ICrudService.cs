@@ -20,7 +20,7 @@ public interface ICrudService<TDto, TCreateDto, TUpdateDto>
     /// </summary>
     /// <param name="id">The ID of the entity to retrieve.</param>
     /// <returns>The entity DTO if found; otherwise, null.</returns>
-    public Task<TDto?> GetAsync(uint id);
+    public Task<TDto?> GetAsync(Guid id);
 
     /// <summary>
     /// Creates a new entity from the provided DTO.
@@ -35,12 +35,12 @@ public interface ICrudService<TDto, TCreateDto, TUpdateDto>
     /// <param name="id">The ID of the entity to update.</param>
     /// <param name="updateDto">The DTO containing updated data.</param>
     /// <returns>The updated entity as a DTO if successful; otherwise, null.</returns>
-    public Task<TDto?> UpdateAsync(uint id, TUpdateDto updateDto);
+    public Task<TDto?> UpdateAsync(Guid id, TUpdateDto updateDto);
 
     /// <summary>
     /// Deletes an entity by its unique identifier.
     /// </summary>
     /// <param name="id">The ID of the entity to delete.</param>
     /// <returns>True if the entity was successfully deleted; otherwise, false.</returns>
-    public Task<bool> DeleteAsync(uint id);
+    public Task<bool> DeleteAsync(Guid id);
 }

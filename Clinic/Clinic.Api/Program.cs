@@ -1,4 +1,5 @@
-﻿using Clinic.Application.Dtos.Appointments;
+using Clinic.Api.Middleware;
+using Clinic.Application.Dtos.Appointments;
 using Clinic.Application.Dtos.Doctors;
 using Clinic.Application.Dtos.Patients;
 using Clinic.Application.Dtos.Specializations;
@@ -9,8 +10,8 @@ using Clinic.Infrastructure.Persistence;
 using Clinic.Infrastructure.Data.Interfaces;
 using Clinic.Infrastructure.Data;
 using Clinic.ServiceDefaults;
-using Clinic.Api.Middleware;
 using Microsoft.EntityFrameworkCore;
+using Clinic.Infrastructure.Repositories.Interfaces;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
@@ -39,6 +40,7 @@ builder.Services.AddAutoMapper(config =>
 });
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddSingleton<Clinic.Domain.Data.DataSeed>();
 
 builder.Services.AddScoped<ICrudService<PatientResponseDto, PatientCreateDto, PatientUpdateDto>, PatientService>();
 builder.Services.AddScoped<ICrudService<DoctorResponseDto, DoctorCreateDto, DoctorUpdateDto>, DoctorService>();
@@ -72,11 +74,42 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-    using var scope = app.Services.CreateScope();
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await context.Database.MigrateAsync();
 }
+using (var migrationScope = app.Services.CreateScope())
+{
+    var context = migrationScope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = migrationScope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        logger.LogInformation("Applying database migrations...");
+        await context.Database.MigrateAsync(); 
+        logger.LogInformation("Migrations applied successfully");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred during database migrations");
+        throw;
+    }
+}
+
+using (var seedingScope = app.Services.CreateScope())
+{
+    var seeder = seedingScope.ServiceProvider.GetRequiredService<IDataSeeder>();
+    var logger = seedingScope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        logger.LogInformation("Seeding database...");
+        await seeder.SeedAsync();
+        logger.LogInformation("Database seeded successfully");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred during database seeding");
+    }
+}
+
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

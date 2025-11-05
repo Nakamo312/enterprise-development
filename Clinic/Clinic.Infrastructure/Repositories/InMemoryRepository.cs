@@ -1,4 +1,5 @@
-﻿using Clinic.Domain.Models;
+﻿using Clinic.Domain.Models.Abstract;
+using Clinic.Infrastructure.Repositories.Interfaces;
 
 namespace Clinic.Infrastructure.Repositories;
 
@@ -10,16 +11,15 @@ namespace Clinic.Infrastructure.Repositories;
 public class InMemoryRepository<T> : IRepository<T> where T : Model
 {
     private readonly List<T> _entities = [];
-    private uint _nextId = 1;
 
     /// <summary>
     /// Creates a new entity in the in-memory repository.
     /// </summary>
     /// <param name="entity">The entity to create.</param>
     /// <returns>The ID of the newly created entity.</returns>
-    public Task<uint> CreateAsync(T entity)
+    public Task<Guid> CreateAsync(T entity)
     {
-        entity.Id = _nextId++;
+        entity.Id = Guid.NewGuid();
         _entities.Add(entity);
         return Task.FromResult(entity.Id);
     }
@@ -38,7 +38,7 @@ public class InMemoryRepository<T> : IRepository<T> where T : Model
     /// </summary>
     /// <param name="id">The ID of the entity to retrieve.</param>
     /// <returns>The entity if found; otherwise, null.</returns>
-    public Task<T?> GetAsync(uint id)
+    public Task<T?> GetAsync(Guid id)
     {
         return Task.FromResult(_entities.FirstOrDefault(e => e.Id == id));
     }
@@ -73,7 +73,7 @@ public class InMemoryRepository<T> : IRepository<T> where T : Model
     /// </summary>
     /// <param name="id">The ID of the entity to delete.</param>
     /// <returns>True if the entity was successfully deleted; otherwise, false.</returns>
-    public Task<bool> DeleteAsync(uint id)
+    public Task<bool> DeleteAsync(Guid id)
     {
         var entity = _entities.FirstOrDefault(e => e.Id == id);
         if (entity != null)

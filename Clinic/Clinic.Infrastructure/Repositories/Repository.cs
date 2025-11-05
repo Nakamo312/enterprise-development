@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Clinic.Domain.Models.Abstract;
+using Clinic.Infrastructure.Repositories.Interfaces;
 using Clinic.Infrastructure.Persistence;
-using Clinic.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Clinic.Infrastructure.Repositories;
 
@@ -18,7 +19,7 @@ public class Repository<T>(AppDbContext context) : IRepository<T> where T : Mode
     /// </summary>
     /// <param name="entity">The entity to create.</param>
     /// <returns>The ID of the newly created entity.</returns>
-    public async Task<uint> CreateAsync(T entity)
+    public async Task<Guid> CreateAsync(T entity)
     {
         _context.Set<T>().Add(entity);
         await _context.SaveChangesAsync();
@@ -39,7 +40,7 @@ public class Repository<T>(AppDbContext context) : IRepository<T> where T : Mode
     /// </summary>
     /// <param name="id">The ID of the entity to retrieve.</param>
     /// <returns>The entity if found; otherwise, null.</returns>
-    public async Task<T?> GetAsync(uint id)
+    public async Task<T?> GetAsync(Guid id)
     {
         return await _context.Set<T>().FindAsync(id);
     }
@@ -61,7 +62,7 @@ public class Repository<T>(AppDbContext context) : IRepository<T> where T : Mode
     /// </summary>
     /// <param name="id">The ID of the entity to delete.</param>
     /// <returns>True if the entity was successfully deleted; otherwise, false.</returns>
-    public async Task<bool> DeleteAsync(uint id)
+    public async Task<bool> DeleteAsync(Guid id)
     {
         var entity = await GetAsync(id);
         if (entity == null) return false;

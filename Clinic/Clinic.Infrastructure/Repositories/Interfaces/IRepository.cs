@@ -1,4 +1,6 @@
-﻿namespace Clinic.Infrastructure.Repositories;
+﻿using System;
+
+namespace Clinic.Infrastructure.Repositories.Interfaces;
 
 /// Generic repository interface for performing CRUD operations on domain
 /// <summary> entities.
@@ -12,7 +14,7 @@ public interface IRepository<T>
     /// </summary>
     /// <param name="entity">The entity to create.</param>
     /// <returns>The ID of the newly created entity.</returns>
-    public Task<uint> CreateAsync(T entity);
+    public Task<Guid> CreateAsync(T entity);
 
     /// <summary>
     /// Retrieves all entities from the repository.
@@ -25,7 +27,7 @@ public interface IRepository<T>
     /// </summary>
     /// <param name="id">The ID of the entity to retrieve.</param>
     /// <returns>The entity if found; otherwise, null.</returns>
-    public Task<T?> GetAsync(uint id);
+    public Task<T?> GetAsync(Guid id);
 
     /// <summary>
     /// Updates an existing entity in the repository.
@@ -39,5 +41,5 @@ public interface IRepository<T>
     /// </summary>
     /// <param name="id">The ID of the entity to delete.</param>
     /// <returns>True if the entity was successfully deleted; otherwise, false.</returns>
-    public Task<bool> DeleteAsync(uint id);
+    public Task<bool> DeleteAsync(Guid id);
 }

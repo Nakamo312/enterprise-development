@@ -54,19 +54,16 @@ public class DoctorsController
     /// <response code="400">If the request data is invalid or specialization does not exist</response>
     /// <response code="404">If the doctor with the specified ID was not found</response>
     /// <response code="500">If there was an internal server error</response>
-    public override async Task<ActionResult> Update(uint id, [FromBody] DoctorUpdateDto updateDto)
+    public override async Task<ActionResult> Update(Guid id, [FromBody] DoctorUpdateDto updateDto)
     {
         try
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            if (updateDto.SpecializationId.HasValue)
+            var specialization = await specializationService.GetAsync(updateDto.SpecializationId);
+            if (specialization == null)
             {
-                var specialization = await specializationService.GetAsync(updateDto.SpecializationId.Value);
-                if (specialization == null)
-                {
-                    return BadRequest(new { error = $"Specialization with ID {updateDto.SpecializationId} does not exist" });
-                }
+                return BadRequest(new { error = $"Specialization with ID {updateDto.SpecializationId} does not exist" });
             }
 
             var updatedEntity = await service.UpdateAsync(id, updateDto);

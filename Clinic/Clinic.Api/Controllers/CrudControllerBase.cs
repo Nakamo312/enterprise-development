@@ -46,11 +46,11 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     /// <response code="200">Returns the requested entity</response>
     /// <response code="404">If the entity with the specified ID was not found</response>
     /// <response code="500">If there was an internal server error</response>
-    [HttpGet("{id:int}")]
+    [HttpGet("{id:guid}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public virtual async Task<ActionResult<TDto>> GetById(uint id)
+    public virtual async Task<ActionResult<TDto>> GetById(Guid id)
     {
         try
         {
@@ -102,12 +102,12 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     /// <response code="400">If the request data is invalid</response>
     /// <response code="404">If the entity with the specified ID was not found</response>
     /// <response code="500">If there was an internal server error</response>
-    [HttpPut("{id:int}")]
+    [HttpPut("{id:guid}")]
     [ProducesResponseType(204)]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public virtual async Task<ActionResult> Update(uint id, [FromBody] TUpdateDto updateDto)
+    public virtual async Task<ActionResult> Update(Guid id, [FromBody] TUpdateDto updateDto)
     {
         try
         {
@@ -131,11 +131,11 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     /// <response code="204">If the deletion was successful</response>
     /// <response code="204">If the entity with the specified ID was not found</response>
     /// <response code="500">If there was an internal server error</response>
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id:guid}")]
     [ProducesResponseType(204)]
     [ProducesResponseType(204)]
     [ProducesResponseType(500)]
-    public virtual async Task<ActionResult> Delete(uint id)
+    public virtual async Task<ActionResult> Delete(Guid id)
     {
         try
         {
@@ -155,12 +155,12 @@ public abstract class CrudControllerBase<TDto, TCreateDto, TUpdateDto>
     /// <summary>
     /// Gets the ID from DTO using reflection
     /// </summary>
-    private static uint GetIdFromDto(TDto dto)
+    private static Guid GetIdFromDto(TDto dto)
     {
         var property = typeof(TDto).GetProperty("Id");
-        if (property != null && property.PropertyType == typeof(uint))
+        if (property != null && property.PropertyType == typeof(Guid))
         {
-            return (uint)property.GetValue(dto)!;
+            return (Guid)property.GetValue(dto)!;
         }
 
         throw new InvalidOperationException($"DTO type {typeof(TDto).Name} does not have an Id property of type uint");

@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -16,8 +15,7 @@ namespace Clinic.Infrastructure.Migrations
                 name: "Patients",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     PassportNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     FullName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Gender = table.Column<string>(type: "text", nullable: false),
@@ -36,8 +34,7 @@ namespace Clinic.Infrastructure.Migrations
                 name: "Specializations",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
@@ -49,12 +46,11 @@ namespace Clinic.Infrastructure.Migrations
                 name: "Doctors",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     PassportNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     FullName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     YearOfBirth = table.Column<long>(type: "bigint", nullable: false),
-                    SpecializationId = table.Column<long>(type: "bigint", nullable: false),
+                    SpecializationId = table.Column<Guid>(type: "uuid", nullable: false),
                     Experience = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
@@ -72,13 +68,12 @@ namespace Clinic.Infrastructure.Migrations
                 name: "Appointments",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     DateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     RoomNumber = table.Column<string>(type: "text", nullable: false),
                     IsRepeated = table.Column<bool>(type: "boolean", nullable: false),
-                    PatientId = table.Column<long>(type: "bigint", nullable: false),
-                    DoctorId = table.Column<long>(type: "bigint", nullable: false)
+                    PatientId = table.Column<Guid>(type: "uuid", nullable: false),
+                    DoctorId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -1,4 +1,4 @@
-﻿using Clinic.Application.Dtos.Analytics;
+﻿using Clinic.Application.Dtos.Appointments;
 using Clinic.Application.Dtos.Doctors;
 using Clinic.Application.Dtos.Patients;
 
@@ -21,7 +21,7 @@ public interface IAnalyticQueryService
     /// </summary>
     /// <param name="doctorId">Unique identifier of the doctor</param>
     /// <returns>Collection of patients treated by the specified doctor</returns>
-    public Task<IEnumerable<PatientResponseDto>> GetPatientsByDoctorAsync(uint doctorId);
+    public Task<IEnumerable<PatientResponseDto>> GetPatientsByDoctorAsync(Guid doctorId);
 
     /// <summary>
     /// Retrieves repeated appointments within the specified date range.
@@ -29,7 +29,7 @@ public interface IAnalyticQueryService
     /// <param name="startDate">Start date of the search range</param>
     /// <param name="endDate">End date of the search range</param>
     /// <returns>Collection of appointment IDs for repeated appointments in the date range</returns>
-    public Task<IEnumerable<uint>> GetRepeatedAppointmentsAsync(DateTime startDate, DateTime endDate);
+    public Task<IEnumerable<AppointmentResponseDto>> GetRepeatedAppointmentsAsync(DateTime startDate, DateTime endDate);
 
     /// <summary>
     /// Retrieves patients over 30 years old who have been treated by multiple different doctors.
@@ -40,7 +40,7 @@ public interface IAnalyticQueryService
     /// <summary>
     /// Retrieves appointments for a specific room during the current month.
     /// </summary>
-    /// <param name="queryDto">Query parameters containing room number and date range</param>
+    /// <param name="roomNumber">Query parameters containing room number and date range</param>
     /// <returns>Collection of appointment IDs for the specified room in current month</returns>
-    public Task<IEnumerable<uint>> GetAppointmentsForRoomThisMonthAsync(RoomAppointmentsQueryDto queryDto);
+    public Task<IEnumerable<AppointmentResponseDto>> GetAppointmentsForRoomThisMonthAsync(string roomNumber);
 }

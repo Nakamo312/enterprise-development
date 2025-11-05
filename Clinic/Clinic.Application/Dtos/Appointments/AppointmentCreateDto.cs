@@ -32,11 +32,11 @@ public class AppointmentCreateDto
     /// Patient associated with the appointment.
     /// </summary>
     [Required(ErrorMessage = "Patient ID is required")]
-    public required uint PatientId { get; set; }
+    public required Guid PatientId { get; set; }
 
     /// <summary>
     /// Doctor associated with the appointment.
     /// </summary>
     [Required(ErrorMessage = "Doctor ID is required")]
-    public required uint DoctorId { get; set; }
+    public required Guid DoctorId { get; set; }
 }
