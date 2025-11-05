@@ -4,7 +4,7 @@ using Clinic.Application.Dtos.Patients;
 using Clinic.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Clinic.API.Controllers;
+namespace Clinic.Api.Controllers;
 
 /// <summary>
 /// Controller for analytic queries and reports.
