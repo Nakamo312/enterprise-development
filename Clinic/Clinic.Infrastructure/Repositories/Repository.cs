@@ -12,8 +12,6 @@ namespace Clinic.Infrastructure.Repositories;
 /// <typeparam name="T">The type of entity this repository works with, must inherit from Model.</typeparam>
 public class Repository<T>(AppDbContext context) : IRepository<T> where T : Model
 {
-    private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
-
     /// <summary>
     /// Creates a new entity in the database.
     /// </summary>
@@ -21,8 +19,8 @@ public class Repository<T>(AppDbContext context) : IRepository<T> where T : Mode
     /// <returns>The ID of the newly created entity.</returns>
     public async Task<Guid> CreateAsync(T entity)
     {
-        _context.Set<T>().Add(entity);
-        await _context.SaveChangesAsync();
+        context.Set<T>().Add(entity);
+        await context.SaveChangesAsync();
         return entity.Id;
     }
 
@@ -32,7 +30,7 @@ public class Repository<T>(AppDbContext context) : IRepository<T> where T : Mode
     /// <returns>A collection of all entities.</returns>
     public async Task<IEnumerable<T>> GetAsync()
     {
-        return await _context.Set<T>().ToListAsync();
+        return await context.Set<T>().ToListAsync();
     }
 
     /// <summary>
@@ -42,7 +40,7 @@ public class Repository<T>(AppDbContext context) : IRepository<T> where T : Mode
     /// <returns>The entity if found; otherwise, null.</returns>
     public async Task<T?> GetAsync(Guid id)
     {
-        return await _context.Set<T>().FindAsync(id);
+        return await context.Set<T>().FindAsync(id);
     }
 
     /// <summary>
@@ -52,8 +50,8 @@ public class Repository<T>(AppDbContext context) : IRepository<T> where T : Mode
     /// <returns>The updated entity if successful; otherwise, null.</returns>
     public async Task<T?> UpdateAsync(T entity)
     {
-        _context.Entry(entity).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        context.Entry(entity).State = EntityState.Modified;
+        await context.SaveChangesAsync();
         return entity;
     }
 
@@ -66,8 +64,8 @@ public class Repository<T>(AppDbContext context) : IRepository<T> where T : Mode
     {
         var entity = await GetAsync(id);
         if (entity == null) return false;
-        _context.Set<T>().Remove(entity);
-        await _context.SaveChangesAsync();
+        context.Set<T>().Remove(entity);
+        await context.SaveChangesAsync();
         return true;
     }
 }
