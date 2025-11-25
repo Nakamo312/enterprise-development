@@ -1,6 +1,6 @@
 ﻿using Clinic.Domain.Models;
 using Microsoft.EntityFrameworkCore;
-
+using EFCore.NamingConventions.Extended;
 namespace Clinic.Infrastructure.Persistence;
 
 /// <summary>
@@ -44,6 +44,7 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.UseSnakeCaseNamingConvention();
         modelBuilder.Entity<Patient>(entity =>
         {
             entity.HasKey(e => e.Id);
