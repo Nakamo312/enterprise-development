@@ -9,11 +9,11 @@ public interface ICreationConfirmable
     /// Confirms successful entity creation and performs necessary cleanup
     /// </summary>
     /// <param name="dataHash">Unique hash identifying the entity data</param>
-    void ConfirmCreation(string dataHash);
+    public void ConfirmCreation(string dataHash);
 
     /// <summary>
     /// Returns an entity to available state after failed creation attempt
     /// </summary>
     /// <param name="dataHash">Unique hash identifying the entity data</param>
-    void ReturnToAvailable(string dataHash);
+    public void ReturnToAvailable(string dataHash);
 }

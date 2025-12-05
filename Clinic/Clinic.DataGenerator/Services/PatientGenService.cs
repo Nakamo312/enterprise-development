@@ -11,7 +11,7 @@ namespace Clinic.DataGenerator.Services;
 public class PatientGenService : IDataGenService<PatientCreateDto>
 {
     private readonly Faker<PatientCreateDto> _faker;
-    private readonly List<Guid> _generatedIds = new();
+    private readonly List<Guid> _generatedIds = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PatientGenService"/> class

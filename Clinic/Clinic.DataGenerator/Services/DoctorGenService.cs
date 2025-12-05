@@ -10,8 +10,8 @@ namespace Clinic.DataGenerator.Services;
 public class DoctorGenService : IDataGenService<DoctorCreateDto>
 {
     private readonly Faker<DoctorCreateDto> _faker;
-    private readonly List<Guid> _generatedIds = new();
-    private List<Guid> _currentSpecializationIds = new();
+    private readonly List<Guid> _generatedIds = [];
+    private List<Guid> _currentSpecializationIds = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DoctorGenService"/> class
@@ -61,7 +61,7 @@ public class DoctorGenService : IDataGenService<DoctorCreateDto>
     /// </summary>
     public void SetSpecializationIds(List<Guid> specializationIds)
     {
-        _currentSpecializationIds = specializationIds ?? new List<Guid>();
+        _currentSpecializationIds = specializationIds ?? [];
     }
 
     /// <summary>

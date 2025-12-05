@@ -13,7 +13,12 @@ namespace Clinic.DataGenerator.Services;
 public class SpecializationGenService : IDataGenService<SpecializationCreateDto>, ICreationConfirmable
 {
     private readonly ConcurrentQueue<string> _availableSpecializations;
-    private readonly ConcurrentDictionary<string, string> _pendingSpecializations; 
+    private readonly ConcurrentDictionary<string, string> _pendingSpecializations;
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false
+    };
 
     public int RemainingCount => _availableSpecializations.Count + _pendingSpecializations.Count;
 
@@ -94,13 +99,8 @@ public class SpecializationGenService : IDataGenService<SpecializationCreateDto>
     /// </summary>
     private static string ComputeDataHash(SpecializationCreateDto dto)
     {
-        var json = JsonSerializer.Serialize(dto, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = false
-        });
-        using var sha256 = SHA256.Create();
-        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(json));
+        var json = JsonSerializer.Serialize(dto, _jsonSerializerOptions);
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(json));
         return Convert.ToBase64String(hash);
     }
 
@@ -108,5 +108,5 @@ public class SpecializationGenService : IDataGenService<SpecializationCreateDto>
     /// Gets the list of generated IDs for tracking purposes
     /// </summary>
     /// <returns>List of generated GUIDs</returns>
-    public List<Guid> GetGeneratedIds() => new();
+    public List<Guid> GetGeneratedIds() => [];
 }

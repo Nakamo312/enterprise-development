@@ -10,9 +10,9 @@ namespace Clinic.DataGenerator.Services;
 public class AppointmentGenService : IDataGenService<AppointmentCreateDto>
 {
     private readonly Faker<AppointmentCreateDto> _faker;
-    private readonly List<Guid> _generatedIds = new();
-    private List<Guid> _currentDoctorIds = new();
-    private List<Guid> _currentPatientIds = new();
+    private readonly List<Guid> _generatedIds = [];
+    private List<Guid> _currentDoctorIds = [];
+    private List<Guid> _currentPatientIds = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AppointmentGenService"/> class
@@ -79,8 +79,8 @@ public class AppointmentGenService : IDataGenService<AppointmentCreateDto>
     /// <param name="patientIds">List of patient IDs</param>
     public void SetDependencies(List<Guid> doctorIds, List<Guid> patientIds)
     {
-        _currentDoctorIds = doctorIds ?? new List<Guid>();
-        _currentPatientIds = patientIds ?? new List<Guid>();
+        _currentDoctorIds = doctorIds ??  [];
+        _currentPatientIds = patientIds ??  [];
     }
 
     /// <summary>

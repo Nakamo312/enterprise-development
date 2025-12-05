@@ -7,7 +7,7 @@ public interface IProducer
     /// <summary>
     /// Sends a batch of messages.
     /// </summary>
-    Task PublishBatchAsync<T>(
+    public Task PublishBatchAsync<T>(
         IEnumerable<T> items,
         string routingKey,
         CancellationToken cancellationToken = default);

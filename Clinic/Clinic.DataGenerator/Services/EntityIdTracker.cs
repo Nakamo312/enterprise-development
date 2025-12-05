@@ -8,9 +8,9 @@ namespace Clinic.DataGenerator.Services;
 /// </summary>
 public class EntityIdTracker
 {
-    private readonly ConcurrentDictionary<string, List<Guid>> _createdIds = new();
-    private readonly ConcurrentDictionary<string, Dictionary<string, object>> _expectedEntities = new();
-    private readonly ConcurrentDictionary<string, ICreationConfirmable> _confirmableServices = new();
+    private readonly ConcurrentDictionary<string, List<Guid>> _createdIds = [];
+    private readonly ConcurrentDictionary<string, Dictionary<string, object>> _expectedEntities = [];
+    private readonly ConcurrentDictionary<string, ICreationConfirmable> _confirmableServices = [];
 
     /// <summary>
     /// Registers a service that can confirm entity creation
@@ -45,7 +45,7 @@ public class EntityIdTracker
     /// <param name="dataHash">Unique hash representing the entity data</param>
     public void RegisterCreatedId(string entityType, Guid id, string dataHash)
     {
-        var ids = _createdIds.GetOrAdd(entityType, _ => new List<Guid>());
+        var ids = _createdIds.GetOrAdd(entityType, _ => []);
         lock (ids)
         {
             ids.Add(id);
@@ -60,8 +60,7 @@ public class EntityIdTracker
         {
             lock (dict)
             {
-                if (dict.ContainsKey(dataHash))
-                    dict.Remove(dataHash);
+                dict.Remove(dataHash);
             }
         }
     }
@@ -80,8 +79,7 @@ public class EntityIdTracker
         {
             lock (dict)
             {
-                if (dict.ContainsKey(dataHash))
-                    dict.Remove(dataHash);
+                dict.Remove(dataHash);
             }
         }
     }
@@ -93,7 +91,7 @@ public class EntityIdTracker
     /// <returns>List of created GUIDs for the specified entity type</returns>
     public List<Guid> GetIds(string entityType)
     {
-        return _createdIds.TryGetValue(entityType, out var idList) ? new List<Guid>(idList) : new List<Guid>();
+        return _createdIds.TryGetValue(entityType, out var idList) ? [..idList] : [];
     }
 
     /// <summary>

@@ -9,17 +9,17 @@ public interface IDataGenService<T>
     /// <summary>
     /// Generates a single instance of T
     /// </summary>
-    T Generate();
+    public T Generate();
 
     /// <summary>
     /// Generates multiple instances of T
     /// </summary>
     /// <param name="count">Number of instances to generate</param>
-    IEnumerable<T> Generate(int count);
+    public IEnumerable<T> Generate(int count);
 
     /// <summary>
     /// Gets the list of generated IDs for tracking purposes
     /// </summary>
     /// <returns>List of generated GUIDs</returns>
-    List<Guid> GetGeneratedIds();
+    public List<Guid> GetGeneratedIds();
 }

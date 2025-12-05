@@ -6,6 +6,8 @@ using RabbitMQ.Client;
 using System.Text.Json;
 using System.Text;
 
+namespace Clinic.RabbitMq.Consumer.Services;
+
 /// <summary>
 /// Service for sending entity creation response messages
 /// </summary>

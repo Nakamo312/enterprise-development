@@ -39,7 +39,7 @@ public class DataGeneratorService
     public List<object> GenerateSpecializations(int count)
     {
         var availableCount = _specializationGenService.RemainingCount;
-        if (availableCount == 0) return new List<object>();
+        if (availableCount == 0) return [];
 
         var toGenerate = Math.Min(count, availableCount);
         var specializations = _specializationGenService.Generate(toGenerate).Cast<object>().ToList();

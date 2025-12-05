@@ -15,6 +15,7 @@ using RabbitMQ.Client.Events;
 using AutoMapper;
 using Clinic.Domain.Models;
 using Clinic.Infrastructure.Repositories.Interfaces;
+using Clinic.RabbitMq.Consumer.Services;
 
 namespace Clinic.RabbitMq.Consumer.Consumers;
 
@@ -276,7 +277,7 @@ public class RabbitMqConsumer(
 
         if (_channel != null)
         {
-            await _channel.CloseAsync();
+            await _channel.CloseAsync(cancellationToken);
             await _channel.DisposeAsync();
         }
 
