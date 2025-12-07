@@ -1,0 +1,51 @@
+<div class="search-panel mb-3">
+    <div class="input-group">
+        <span class="input-group-text">
+            <i class="bi bi-search"></i>
+        </span>
+        <input type="text" 
+               class="form-control" 
+               placeholder="@Placeholder"
+               value="@SearchText"
+               @oninput="OnInput" />
+        
+        @if (!string.IsNullOrEmpty(SearchText))
+        {
+            <button class="btn btn-outline-secondary" type="button" @onclick="Clear">
+                <i class="bi bi-x"></i>
+            </button>
+        }
+    </div>
+</div>
+
+<style>
+    .search-panel {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string Placeholder { get; set; } = "Поиск...";
+    
+    [Parameter]
+    public string SearchText { get; set; } = string.Empty;
+    
+    [Parameter]
+    public EventCallback<string> SearchTextChanged { get; set; }
+    
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        SearchText = e.Value?.ToString() ?? "";
+        await SearchTextChanged.InvokeAsync(SearchText);
+    }
+    
+    private async Task Clear()
+    {
+        SearchText = "";
+        await SearchTextChanged.InvokeAsync(SearchText);
+    }
+}

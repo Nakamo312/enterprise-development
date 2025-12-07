@@ -24,7 +24,33 @@ builder.Services.Configure<RouteOptions>(options =>
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
 });
+var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        policy =>
+        {
+            if (corsOrigins != null && corsOrigins.Any())
+            {
+                policy.WithOrigins(corsOrigins)
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            }
+            else if (builder.Environment.IsDevelopment())
+            {
+                policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            }
+            else
+            {
+                policy.SetIsOriginAllowed(_ => false);
+            }
+        });
+});
 builder.Services.AddControllers().AddJsonOptions(opts =>
 {
     opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -109,5 +135,5 @@ catch (Exception ex)
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-
+app.UseCors();
 app.Run();

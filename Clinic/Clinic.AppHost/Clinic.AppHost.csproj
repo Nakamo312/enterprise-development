@@ -19,6 +19,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\Clinic.Api\Clinic.Api.csproj" />
+    <ProjectReference Include="..\Clinic.Client\Clinic.Client.csproj" />
     <ProjectReference Include="..\Clinic.RabbitMq.Producer\Clinic.RabbitMq.Producer.csproj" />
     <ProjectReference Include="..\Clinic.RabbitMq.Consumer\Clinic.RabbitMq.Consumer.csproj" />
   </ItemGroup>

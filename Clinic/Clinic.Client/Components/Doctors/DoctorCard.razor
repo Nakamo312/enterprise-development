@@ -1,0 +1,277 @@
+@using System.Net.Http.Json
+@using Clinic.Application.Dtos.Doctors
+@inject HttpClient Http
+
+<div class="card mb-3 doctor-card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <div class="d-flex flex-nowrap">
+            @if (!_isEditing)
+            {
+                <button class="btn btn-sm btn-light me-1" @onclick="StartEditing">
+                    <i class="bi bi-pencil"></i> Редактировать
+                </button>
+                <button class="btn btn-sm btn-danger" @onclick="() => OnDelete.InvokeAsync(Doctor.Id)">
+                    <i class="bi bi-trash"></i> Удалить
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-sm btn-success me-1" @onclick="SaveChanges">
+                    <i class="bi bi-check"></i> Сохранить
+                </button>
+                <button class="btn btn-sm btn-secondary" @onclick="CancelEditing">
+                    <i class="bi bi-x"></i> Отмена
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="card-body">
+        <table class="table doctor-table mb-0">
+            <tbody>
+                <tr>
+                    <td width="30%"><strong>Паспорт:</strong></td>
+                    <td>
+                        @if (!_isEditing)
+                        {
+                            @Doctor.PassportNumber
+                        }
+                        else
+                        {
+                            <input @bind="_editDoctor!.PassportNumber" class="form-control form-control-sm" />
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>ФИО:</strong></td>
+                    <td>
+                        @if (!_isEditing)
+                        {
+                            @Doctor.FullName
+                        }
+                        else
+                        {
+                            <input @bind="_editDoctor!.FullName" class="form-control form-control-sm" />
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Год рождения:</strong></td>
+                    <td>
+                        @if (!_isEditing)
+                        {
+                            @Doctor.YearOfBirth
+                        }
+                        else
+                        {
+                            <input type="number" @bind="_editYearOfBirth" 
+                                   class="form-control form-control-sm" />
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Специализация:</strong></td>
+                    <td>
+                        @if (!_isEditing)
+                        {
+                            @(_specializationName ?? "Загрузка...")
+                        }
+                        else
+                        {
+                            @if (_specializationsLoading)
+                            {
+                                <div class="form-control form-control-sm">
+                                    <span class="spinner-border spinner-border-sm"></span>
+                                </div>
+                            }
+                            else
+                            {
+                                <select @bind="_editDoctor!.SpecializationId" class="form-select form-select-sm">
+                                    <option value="">Выберите специализацию</option>
+                                    @foreach (var spec in _specializations)
+                                    {
+                                        <option value="@spec.Id">@spec.Name</option>
+                                    }
+                                </select>
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Стаж:</strong></td>
+                    <td>
+                        @if (!_isEditing)
+                        {
+                            @Doctor.Experience
+                        }
+                        else
+                        {
+                            <input type="number" @bind="_editDoctor!.Experience" 
+                                   class="form-control form-control-sm" />
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-danger m-0 rounded-0">
+            @_errorMessage
+        </div>
+    }
+</div>
+
+<style>
+    .doctor-card {
+        height: 350px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .doctor-card .card-body {
+        flex: 1;
+        overflow-y: auto;
+    }
+    
+    .doctor-table {
+        border-collapse: collapse;
+    }
+    
+    .doctor-table tr {
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .doctor-table tr:last-child {
+        border-bottom: none;
+    }
+    
+    .doctor-table td {
+        padding: 8px 0;
+    }
+    
+    .doctor-table td:first-child {
+        padding-right: 16px;
+        vertical-align: top;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public required DoctorResponseDto Doctor { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnDelete { get; set; }
+
+    [Parameter]
+    public EventCallback OnDoctorUpdated { get; set; }
+
+    private bool _isEditing = false;
+    private DoctorUpdateDto? _editDoctor;
+    private string? _errorMessage;
+    private bool _specializationsLoading = false;
+    private List<SpecializationDto> _specializations = new();
+    private string? _specializationName;
+    private int _editYearOfBirth;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSpecializationName();
+    }
+
+    private async Task LoadSpecializationName()
+    {
+        try
+        {
+            var spec = await Http.GetFromJsonAsync<SpecializationDto>($"api/specializations/{Doctor.SpecializationId}");
+            _specializationName = spec?.Name;
+        }
+        catch
+        {
+            _specializationName = "Неизвестно";
+        }
+    }
+
+    private async void StartEditing()
+    {
+        _isEditing = true;
+        _errorMessage = null;
+        
+        _editDoctor = new DoctorUpdateDto
+        {
+            PassportNumber = Doctor.PassportNumber,
+            FullName = Doctor.FullName,
+            YearOfBirth = Doctor.YearOfBirth,
+            SpecializationId = Doctor.SpecializationId,
+            Experience = (int?)Doctor.Experience
+        };
+        
+        _editYearOfBirth = (int)Doctor.YearOfBirth;
+        
+        await LoadSpecializations(true);
+    }
+
+    private async Task LoadSpecializations(bool forceRefresh = false)
+    {
+        _specializationsLoading = true;
+        StateHasChanged();
+        
+        try
+        {
+            var url = forceRefresh ? $"api/specializations?_t={DateTime.Now.Ticks}" : "api/specializations";
+            _specializations = await Http.GetFromJsonAsync<List<SpecializationDto>>(url) ?? new();
+        }
+        catch
+        {
+            _specializations = new();
+        }
+        finally
+        {
+            _specializationsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveChanges()
+    {
+        if (_editDoctor == null) return;
+
+        _editDoctor.YearOfBirth = (uint)_editYearOfBirth;
+        _errorMessage = null;
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/doctors/{Doctor.Id}", _editDoctor);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _isEditing = false;
+                await OnDoctorUpdated.InvokeAsync();
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _errorMessage = "Ошибка при сохранении данных";
+            }
+        }
+        catch
+        {
+            _errorMessage = "Ошибка соединения";
+        }
+    }
+
+    private void CancelEditing()
+    {
+        _isEditing = false;
+        _editDoctor = null;
+        _editYearOfBirth = 1990;
+        _errorMessage = null;
+    }
+
+    public class SpecializationDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+}

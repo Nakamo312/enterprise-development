@@ -1,0 +1,415 @@
+﻿@page "/"
+@using Clinic.Client.Components.Doctors
+@using Clinic.Client.Components.Patients
+@using Clinic.Client.Components.Appointments
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-primary text-white p-4 rounded-3">
+                <h1 class="display-6 mb-2">
+                    <i class="bi bi-heart-pulse me-2"></i>
+                    Клиника "Здоровье+"
+                </h1>
+                <p class="lead mb-0">
+                    Система управления медицинской клиникой
+                </p>
+                <small class="text-white-50">
+                    <i class="bi bi-calendar3"></i> Сегодня: @DateTime.Today.ToString("dd.MM.yyyy")
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-primary border-2 h-100">
+                <div class="card-body text-center">
+                    <div class="bg-primary text-white rounded-circle p-3 d-inline-block mb-3">
+                        <i class="bi bi-person-badge fs-2"></i>
+                    </div>
+                    <h6 class="card-title text-muted">Врачи</h6>
+                    <div class="counter" data-target="24">
+                        <h2 class="mb-0">0</h2>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge bg-primary">8 на смене</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-success border-2 h-100">
+                <div class="card-body text-center">
+                    <div class="bg-success text-white rounded-circle p-3 d-inline-block mb-3">
+                        <i class="bi bi-people fs-2"></i>
+                    </div>
+                    <h6 class="card-title text-muted">Пациенты</h6>
+                    <div class="counter" data-target="356">
+                        <h2 class="mb-0">0</h2>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge bg-success">+5 сегодня</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-warning border-2 h-100">
+                <div class="card-body text-center">
+                    <div class="bg-warning text-white rounded-circle p-3 d-inline-block mb-3">
+                        <i class="bi bi-calendar-check fs-2"></i>
+                    </div>
+                    <h6 class="card-title text-muted">Записи сегодня</h6>
+                    <div class="counter" data-target="42">
+                        <h2 class="mb-0">0</h2>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge bg-warning">18 завершено</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-info border-2 h-100">
+                <div class="card-body text-center">
+                    <div class="bg-info text-white rounded-circle p-3 d-inline-block mb-3">
+                        <i class="bi bi-door-open fs-2"></i>
+                    </div>
+                    <h6 class="card-title text-muted">Свободные кабинеты</h6>
+                    <div class="counter" data-target="7">
+                        <h2 class="mb-0">0</h2>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge bg-info">из 15</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        Прогресс дня
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Записи сегодня</h6>
+                            <div class="progress mb-3" style="height: 20px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: 43%" aria-valuenow="43" aria-valuemin="0" aria-valuemax="100">
+                                    43%
+                                </div>
+                            </div>
+                            <small class="text-muted">18 из 42 завершено</small>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <h6>Занятость врачей</h6>
+                            <div class="progress mb-3" style="height: 20px;">
+                                <div class="progress-bar bg-info" role="progressbar" 
+                                     style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100">
+                                    78%
+                                </div>
+                            </div>
+                            <small class="text-muted">19 из 24 врачей работают</small>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <h6>Загрузка кабинетов</h6>
+                            <div class="progress mb-3" style="height: 20px;">
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                     style="width: 53%" aria-valuenow="53" aria-valuemin="0" aria-valuemax="100">
+                                    53%
+                                </div>
+                            </div>
+                            <small class="text-muted">8 из 15 кабинетов заняты</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>
+                        Быстрые действия
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <button class="btn btn-primary btn-lg w-100 py-3" @onclick="ShowAppointmentCreate">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Новая запись
+                            </button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <button class="btn btn-success btn-lg w-100 py-3" @onclick="ShowPatientCreate">
+                                <i class="bi bi-person-plus me-2"></i>
+                                Новый пациент
+                            </button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <button class="btn btn-info btn-lg w-100 py-3" @onclick="ShowDoctorCreate">
+                                <i class="bi bi-person-badge me-2"></i>
+                                Новый врач
+                            </button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <a href="/analytics" class="btn btn-warning btn-lg w-100 py-3">
+                                <i class="bi bi-graph-up me-2"></i>
+                                Аналитика
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-activity me-2"></i>
+                        Живая статистика
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="spinner-border text-primary" role="status" style="width: 80px; height: 80px;">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="mt-3">Обновление данных...</p>
+                    </div>
+                    
+                    <div class="list-group">
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex justify-content-between">
+                                <span>Новые пациенты</span>
+                                <span class="badge bg-success rounded-pill">+5</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex justify-content-between">
+                                <span>Завершенные записи</span>
+                                <span class="badge bg-primary rounded-pill">+3</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex justify-content-between">
+                                <span>Свободные врачи</span>
+                                <span class="badge bg-warning rounded-pill">4</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-newspaper me-2"></i>
+                        Последние новости клиники
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <span class="badge bg-primary mb-2">Оборудование</span>
+                                    <h6>Новый рентгеновский аппарат</h6>
+                                    <p class="small text-muted">
+                                        В кабинет №205 поступил современный цифровой рентгеновский аппарат последнего поколения.
+                                    </p>
+                                    <small class="text-muted">2 дня назад</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <span class="badge bg-success mb-2">Персонал</span>
+                                    <h6>Повышение квалификации</h6>
+                                    <p class="small text-muted">
+                                        3 наших врача прошли курсы по кардиологии в медицинском университете.
+                                    </p>
+                                    <small class="text-muted">1 неделя назад</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <span class="badge bg-warning mb-2">Услуги</span>
+                                    <h6>Новая физиотерапия</h6>
+                                    <p class="small text-muted">
+                                        Внедрена система физиотерапии для пациентов с опорно-двигательными нарушениями.
+                                    </p>
+                                    <small class="text-muted">2 недели назад</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart me-2"></i>
+                        Активность клиники
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-around flex-wrap">
+                        <div class="text-center mx-3 mb-3">
+                            <div class="position-relative" style="width: 100px; height: 100px;">
+                                <div class="progress" style="width: 100px; height: 100px; transform: rotate(-90deg);">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <h4 class="mb-0">85%</h4>
+                                    <small class="text-muted">Загруженность</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mx-3 mb-3">
+                            <div class="position-relative" style="width: 100px; height: 100px;">
+                                <div class="spinner-grow text-success" role="status" style="width: 100px; height: 100px;">
+                                    <span class="visually-hidden">Загрузка...</span>
+                                </div>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <h4 class="mb-0">94%</h4>
+                                    <small class="text-muted">Удовлетворенность</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mx-3 mb-3">
+                            <div class="position-relative" style="width: 100px; height: 100px;">
+                                <div class="progress" style="width: 100px; height: 100px; transform: rotate(-90deg);">
+                                    <div class="progress-bar bg-info" role="progressbar" 
+                                         style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <h4 class="mb-0">75%</h4>
+                                    <small class="text-muted">Эффективность</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<AppointmentCreate @ref="_appointmentCreate" />
+<PatientCreate @ref="_patientCreate" />
+<DoctorCreate @ref="_doctorCreate" />
+
+<style>
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: none;
+        transition: transform 0.3s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .border-2 {
+        border-width: 2px !important;
+    }
+    
+    .rounded-circle {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-lg {
+        padding: 1rem 1.5rem;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+    }
+    
+    .btn-lg:hover {
+        transform: scale(1.05);
+    }
+    
+    .counter h2 {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .progress-bar {
+        transition: width 2s ease-in-out;
+    }
+    
+    .spinner-border, .spinner-grow {
+        animation-duration: 1.5s;
+    }
+</style>
+
+@code {
+
+    private AppointmentCreate? _appointmentCreate;
+    private PatientCreate? _patientCreate;
+    private DoctorCreate? _doctorCreate;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500); 
+
+    }
+    
+    private void ShowAppointmentCreate()
+    {
+        _appointmentCreate?.Show();
+    }
+    
+    private void ShowPatientCreate()
+    {
+        _patientCreate?.Show();
+    }
+    
+    private void ShowDoctorCreate()
+    {
+        _doctorCreate?.Show();
+    }
+}

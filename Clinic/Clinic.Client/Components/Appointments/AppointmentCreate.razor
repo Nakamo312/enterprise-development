@@ -1,0 +1,363 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Net.Http.Json
+@using Clinic.Application.Dtos.Appointments
+@inject HttpClient Http
+
+<div class="modal @(IsOpen ? "d-block" : "d-none")" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <button type="button" class="btn-close btn-close-white" @onclick="CloseModal"></button>
+            </div>
+
+            @if (Model != null)
+            {
+                <EditForm Model="Model" OnValidSubmit="HandleValidSubmit" FormName="AppointmentCreate">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="alert alert-danger m-3" />
+
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Дата и время *</label>
+                                <input type="datetime-local" class="form-control"
+                                       value="@_dateTimeLocal"
+                                       @onchange="@((e) => _dateTimeLocal = e.Value?.ToString() ?? string.Empty)" />
+                                <ValidationMessage For="@(() => Model.DateTime)" class="text-danger small" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Кабинет *</label>
+                                <InputText @bind-Value="Model.RoomNumber" 
+                                          class="form-control" maxlength="10" />
+                                <ValidationMessage For="@(() => Model.RoomNumber)" class="text-danger small" />
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Повторный визит</label>
+                                <div class="form-check form-switch">
+                                    <InputCheckbox @bind-Value="Model.IsRepeated" 
+                                                  class="form-check-input" />
+                                    <label class="form-check-label">Да</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Пациент *</label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control"
+                                           placeholder="Введите ФИО пациента..."
+                                           @bind="_patientSearch"
+                                           @bind:event="oninput"
+                                           @onfocus="() => _showPatientSuggestions = true"
+                                           @onblur="() => HidePatientSuggestions()" />
+                                    
+                                    @if (_showPatientSuggestions && !string.IsNullOrEmpty(_patientSearch) && _filteredPatients.Any())
+                                    {
+                                        <div class="dropdown-menu show w-100" 
+                                             style="position: absolute; z-index: 1050; top: 100%; left: 0; right: 0;">
+                                            @foreach (var patient in _filteredPatients.Take(10))
+                                            {
+                                                <button class="dropdown-item" type="button" 
+                                                        @onclick="@(() => SelectPatient(patient))"
+                                                        @onmousedown:preventDefault>
+                                                    @patient.FullName (@patient.PassportNumber)
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                @if (!string.IsNullOrEmpty(_selectedPatientName))
+                                {
+                                    <div class="mt-2 alert alert-success py-2">
+                                        <small>
+                                            <i class="bi bi-person-check me-1"></i>
+                                            Выбран: <strong>@_selectedPatientName</strong>
+                                        </small>
+                                    </div>
+                                }
+                                <ValidationMessage For="@(() => Model.PatientId)" class="text-danger small" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Врач *</label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control"
+                                           placeholder="Введите ФИО врача..."
+                                           @bind="_doctorSearch"
+                                           @bind:event="oninput"
+                                           @onfocus="() => _showDoctorSuggestions = true"
+                                           @onblur="() => HideDoctorSuggestions()" />
+                                    
+                                    @if (_showDoctorSuggestions && !string.IsNullOrEmpty(_doctorSearch) && _filteredDoctors.Any())
+                                    {
+                                        <div class="dropdown-menu show w-100" 
+                                             style="position: absolute; z-index: 1050; top: 100%; left: 0; right: 0;">
+                                            @foreach (var doctor in _filteredDoctors.Take(10))
+                                            {
+                                                <button class="dropdown-item" type="button" 
+                                                        @onclick="@(() => SelectDoctor(doctor))"
+                                                        @onmousedown:preventDefault>
+                                                    @doctor.FullName
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                @if (!string.IsNullOrEmpty(_selectedDoctorName))
+                                {
+                                    <div class="mt-2 alert alert-success py-2">
+                                        <small>
+                                            <i class="bi bi-person-check me-1"></i>
+                                            Выбран: <strong>@_selectedDoctorName</strong>
+                                        </small>
+                                    </div>
+                                }
+                                <ValidationMessage For="@(() => Model.DoctorId)" class="text-danger small" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">Отмена</button>
+                        <button type="submit" class="btn btn-primary" disabled="@IsSubmitting">
+                            @if (IsSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                <span>Создание...</span>
+                            }
+                            else
+                            {
+                                <span>Создать</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal {
+        display: none;
+    }
+    
+    .modal.d-block {
+        display: block;
+    }
+    
+    .dropdown-menu {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .dropdown-item {
+        white-space: normal;
+        word-wrap: break-word;
+        cursor: pointer;
+        padding: 8px 16px;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public EventCallback OnAppointmentCreated { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private bool IsOpen { get; set; }
+    private bool IsSubmitting { get; set; }
+    private bool _showPatientSuggestions = false;
+    private bool _showDoctorSuggestions = false;
+    
+    private List<PatientDto> _patients = new();
+    private List<DoctorDto> _doctors = new();
+    
+    private string _patientSearch = string.Empty;
+    private string _doctorSearch = string.Empty;
+    private string _dateTimeLocal = string.Empty;
+    
+    private string _selectedPatientName = string.Empty;
+    private string _selectedDoctorName = string.Empty;
+    
+    private AppointmentFormModel? _model;
+
+    private AppointmentFormModel Model => _model ??= new AppointmentFormModel();
+
+    public async Task Show()
+    {
+        _model = new AppointmentFormModel
+        {
+            DateTime = DateTime.Now.AddHours(1),
+            RoomNumber = string.Empty,
+            IsRepeated = false,
+            PatientId = Guid.Empty,
+            DoctorId = Guid.Empty
+        };
+        
+        _dateTimeLocal = Model.DateTime!.Value.ToString("yyyy-MM-ddTHH:mm");
+        _patientSearch = string.Empty;
+        _doctorSearch = string.Empty;
+        _selectedPatientName = string.Empty;
+        _selectedDoctorName = string.Empty;
+        _showPatientSuggestions = false;
+        _showDoctorSuggestions = false;
+        
+        await LoadPatientsAndDoctors();
+        
+        IsOpen = true;
+        StateHasChanged();
+    }
+
+    private async Task LoadPatientsAndDoctors()
+    {
+        _patients = await Http.GetFromJsonAsync<List<PatientDto>>("api/patients") ?? new();
+        _doctors = await Http.GetFromJsonAsync<List<DoctorDto>>("api/doctors") ?? new();
+    }
+
+    private IEnumerable<PatientDto> _filteredPatients
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_patientSearch))
+                return Enumerable.Empty<PatientDto>();
+            
+            return _patients.Where(p => 
+                (p.FullName ?? "").Contains(_patientSearch, StringComparison.OrdinalIgnoreCase) ||
+                (p.PassportNumber ?? "").Contains(_patientSearch, StringComparison.OrdinalIgnoreCase))
+                .Take(10);
+        }
+    }
+    
+    private IEnumerable<DoctorDto> _filteredDoctors
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_doctorSearch))
+                return Enumerable.Empty<DoctorDto>();
+            
+            return _doctors.Where(d => 
+                (d.FullName ?? "").Contains(_doctorSearch, StringComparison.OrdinalIgnoreCase))
+                .Take(10);
+        }
+    }
+    
+    private void SelectPatient(PatientDto patient)
+    {
+        if (_model != null)
+        {
+            _model.PatientId = patient.Id;
+            _patientSearch = patient.FullName;
+            _selectedPatientName = patient.FullName;
+            _showPatientSuggestions = false;
+        }
+    }
+    
+    private void SelectDoctor(DoctorDto doctor)
+    {
+        if (_model != null)
+        {
+            _model.DoctorId = doctor.Id;
+            _doctorSearch = doctor.FullName;
+            _selectedDoctorName = doctor.FullName;
+            _showDoctorSuggestions = false;
+        }
+    }
+
+    private async void HidePatientSuggestions()
+    {
+        await Task.Delay(200);
+        _showPatientSuggestions = false;
+        StateHasChanged();
+    }
+
+    private async void HideDoctorSuggestions()
+    {
+        await Task.Delay(200);
+        _showDoctorSuggestions = false;
+        StateHasChanged();
+    }
+
+    private void CloseModal()
+    {
+        IsOpen = false;
+        StateHasChanged();
+        OnCancel.InvokeAsync();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_model == null) return;
+
+        if (DateTime.TryParse(_dateTimeLocal, out var localDateTime))
+        {
+            _model.DateTime = DateTime.SpecifyKind(localDateTime, DateTimeKind.Local);
+        }
+        else
+        {
+            _model.DateTime = DateTime.Now.AddHours(1);
+        }
+
+        IsSubmitting = true;
+        StateHasChanged();
+
+        var dto = new AppointmentCreateDto
+        {
+            DateTime = _model.DateTime!.Value.ToUniversalTime(),
+            RoomNumber = _model.RoomNumber!,
+            IsRepeated = _model.IsRepeated,
+            PatientId = _model.PatientId!.Value,
+            DoctorId = _model.DoctorId!.Value
+        };
+
+        var response = await Http.PostAsJsonAsync("api/appointments", dto);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await OnAppointmentCreated.InvokeAsync();
+            CloseModal();
+        }
+        
+        IsSubmitting = false;
+        StateHasChanged();
+    }
+
+    public class AppointmentFormModel
+    {
+        [Required(ErrorMessage = "Дата и время обязательны")]
+        public DateTime? DateTime { get; set; }
+
+        [Required(ErrorMessage = "Номер кабинета обязателен")]
+        [StringLength(10, ErrorMessage = "Номер кабинета не должен превышать 10 символов")]
+        public string? RoomNumber { get; set; }
+
+        [Required(ErrorMessage = "ID пациента обязателен")]
+        public Guid? PatientId { get; set; }
+
+        [Required(ErrorMessage = "ID врача обязателен")]
+        public Guid? DoctorId { get; set; }
+
+        public bool IsRepeated { get; set; }
+    }
+
+    public class PatientDto
+    {
+        public Guid Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string PassportNumber { get; set; } = string.Empty;
+    }
+
+    public class DoctorDto
+    {
+        public Guid Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+    }
+}

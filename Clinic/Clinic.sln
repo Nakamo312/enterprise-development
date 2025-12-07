@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clinic.DataGenerator", "Cli
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clinic.RabbitMq.Consumer", "Clinic.RabbitMq.Consumer\Clinic.RabbitMq.Consumer.csproj", "{8B03E3B8-FF0A-4908-880E-4D5AB2676182}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Clinic.RabbitMq.Producer", "Clinic.RabbitMq.Producer\Clinic.RabbitMq.Producer.csproj", "{201B3F36-ED06-4D3F-B791-F19577B562A0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clinic.RabbitMq.Producer", "Clinic.RabbitMq.Producer\Clinic.RabbitMq.Producer.csproj", "{201B3F36-ED06-4D3F-B791-F19577B562A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Clinic.Client", "Clinic.Client\Clinic.Client.csproj", "{57A78291-108B-4B75-9FC1-350415378BA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,10 @@ Global
 		{201B3F36-ED06-4D3F-B791-F19577B562A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{201B3F36-ED06-4D3F-B791-F19577B562A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{201B3F36-ED06-4D3F-B791-F19577B562A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57A78291-108B-4B75-9FC1-350415378BA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57A78291-108B-4B75-9FC1-350415378BA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57A78291-108B-4B75-9FC1-350415378BA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57A78291-108B-4B75-9FC1-350415378BA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
