@@ -1,0 +1,90 @@
+﻿@using MudBlazor
+@using Clinic.Application.Dtos.Appointments
+@inject HttpClient Http
+
+<BaseAnalyticsCard TItem="AppointmentResponseDto"
+                   Title="Повторные записи"
+                   Icon="@Icons.Material.Filled.CalendarToday"
+                   ButtonText="Найти записи"
+                   ButtonIcon="@Icons.Material.Filled.Search"
+                   ButtonColor="Color.Warning"
+                   Class="@Class"
+                   Items="@_appointments"
+                   IsLoading="@_isLoading"
+                   OnLoadData="LoadRepeatedAppointments"
+                   EmptyMessage="Повторные записи за указанный период не найдены">
+
+    <FilterContent>
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudDatePicker Label="Дата начала"
+                               @bind-Date="@_startDate"
+                               DateFormat="dd.MM.yyyy"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudDatePicker Label="Дата окончания"
+                               @bind-Date="@_endDate"
+                               DateFormat="dd.MM.yyyy"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+    </FilterContent>
+
+    <TableContent>
+        <MudTable 
+            T="AppointmentResponseDto" 
+            Items="@_appointments" 
+            Hover="true"
+            Class="flex-grow-1"
+            Style="max-height: 300px; overflow-y: auto;">
+            <HeaderContent>
+                <MudTh>Дата и время</MudTh>
+                <MudTh>Кабинет</MudTh>
+                <MudTh>Повторный</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Дата и время">@context.DateTime.ToString("dd.MM.yyyy HH:mm")</MudTd>
+                <MudTd DataLabel="Кабинет">@context.RoomNumber</MudTd>
+                <MudTd DataLabel="Повторный">
+                    <MudChip T="string"
+                             Size="Size.Small"
+                             Color="@(context.IsRepeated ? Color.Warning : Color.Secondary)">
+                        @(context.IsRepeated ? "Да" : "Нет")
+                    </MudChip>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </TableContent>
+</BaseAnalyticsCard>
+
+@code {
+    [Parameter] public string Class { get; set; } = "h-100 d-flex flex-column";
+    private List<AppointmentResponseDto>? _appointments;
+    private bool _isLoading = false;
+    private DateTime? _startDate = DateTime.Today.AddMonths(-1);
+    private DateTime? _endDate = DateTime.Today;
+
+    private async Task LoadRepeatedAppointments()
+    {
+        _isLoading = true;
+
+        try
+        {
+            var start = _startDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd");
+            var end = _endDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.ToString("yyyy-MM-dd");
+
+            var url = $"api/analytic/appointments/repeated?startDate={start}&endDate={end}";
+            var appointments = await Http.GetFromJsonAsync<List<AppointmentResponseDto>>(url);
+            _appointments = appointments?.OrderByDescending(a => a.DateTime).ToList();
+        }
+        catch
+        {
+            _appointments = null;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

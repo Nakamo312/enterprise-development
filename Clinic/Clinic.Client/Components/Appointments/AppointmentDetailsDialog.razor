@@ -1,0 +1,169 @@
+@using MudBlazor
+@using System.Net.Http.Json
+@using Clinic.Application.Dtos.Appointments
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (Appointment != null)
+        {
+            <MudForm @ref="_form">
+                <MudText Typo="Typo.h6" Class="mb-2">Редактировать запись</MudText>
+
+                <MudAutocomplete T="PatientDto"
+                                 Label="Пациент *"
+                                 @bind-Value="_selectedPatient"
+                                 SearchFunc="SearchPatients"
+                                 ToStringFunc="@(p => p?.FullName ?? string.Empty)"
+                                 Required="true"
+                                 RequiredError="Выберите пациента" />
+
+                <MudAutocomplete T="DoctorDto"
+                                 Label="Врач *"
+                                 @bind-Value="_selectedDoctor"
+                                 SearchFunc="SearchDoctors"
+                                 ToStringFunc="@(d => d?.FullName ?? string.Empty)"
+                                 Required="true"
+                                 RequiredError="Выберите врача" />
+
+                <MudDatePicker Label="Дата и время *"
+                               Date="@Appointment.DateTime"
+                               DateChanged="@(date => Appointment.DateTime = date ?? DateTime.Now)"
+                               DateFormat="dd.MM.yyyy HH:mm"
+                               Required="true" />
+
+
+                <MudTextField @bind-Value="Appointment.RoomNumber"
+                              Label="Кабинет"
+                              MaxLength="10" />
+
+                <MudCheckBox T="bool"
+                             @bind-Value="Appointment.IsRepeated"
+                             Label="Повторный визит" />
+            </MudForm>
+        }
+        else
+        {
+            <MudText>Нет данных для отображения</MudText>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Save" Disabled="@_isSaving">Сохранить</MudButton>
+        <MudButton Color="Color.Secondary" OnClick="Cancel" Disabled="@_isSaving">Отмена</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public AppointmentResponseDto Appointment { get; set; } = default!;
+    [CascadingParameter] public IMudDialogInstance Dialog { get; set; } = default!;
+
+    private MudForm? _form;
+    private bool _isSaving;
+
+    private PatientDto? _selectedPatient;
+    private DoctorDto? _selectedDoctor;
+
+    private List<PatientDto> _patients = new();
+    private List<DoctorDto> _doctors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPatientsAndDoctors();
+
+        if (Appointment.PatientId != Guid.Empty)
+            _selectedPatient = _patients.FirstOrDefault(p => p.Id == Appointment.PatientId);
+
+        if (Appointment.DoctorId != Guid.Empty)
+            _selectedDoctor = _doctors.FirstOrDefault(d => d.Id == Appointment.DoctorId);
+    }
+
+    private async Task LoadPatientsAndDoctors()
+    {
+        _patients = await Http.GetFromJsonAsync<List<PatientDto>>("api/patients") ?? new();
+        _doctors = await Http.GetFromJsonAsync<List<DoctorDto>>("api/doctors") ?? new();
+    }
+
+    private async Task<IEnumerable<PatientDto>> SearchPatients(string value, CancellationToken cancellationToken)
+    {
+        await Task.Yield();
+        if (string.IsNullOrWhiteSpace(value))
+            return _patients;
+
+        return _patients
+            .Where(p => p.FullName.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+                        p.PassportNumber.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .Take(10);
+    }
+
+    private async Task<IEnumerable<DoctorDto>> SearchDoctors(string value, CancellationToken cancellationToken)
+    {
+        await Task.Yield();
+        if (string.IsNullOrWhiteSpace(value))
+            return _doctors;
+
+        return _doctors
+            .Where(d => d.FullName.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .Take(10);
+    }
+
+    private async Task Save()
+    {
+        if (_form == null) return;
+
+        await _form.Validate();
+        if (!_form.IsValid) return;
+
+        if (_selectedPatient == null || _selectedDoctor == null)
+        {
+            Snackbar.Add("Выберите пациента и врача", Severity.Warning);
+            return;
+        }
+
+        _isSaving = true;
+
+        Appointment.PatientId = _selectedPatient.Id;
+        Appointment.DoctorId = _selectedDoctor.Id;
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/appointments/{Appointment.Id}", Appointment);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Запись успешно обновлена", Severity.Success);
+                Dialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Ошибка при обновлении записи", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ошибка: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Dialog.Cancel();
+    }
+
+    public class PatientDto
+    {
+        public Guid Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string PassportNumber { get; set; } = string.Empty;
+    }
+
+    public class DoctorDto
+    {
+        public Guid Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+    }
+}

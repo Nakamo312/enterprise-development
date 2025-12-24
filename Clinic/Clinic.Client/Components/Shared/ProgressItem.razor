@@ -1,0 +1,10 @@
+﻿<MudText Typo="Typo.body2" Class="mb-2">@Title</MudText>
+<MudProgressLinear Color="@Color" Size="Size.Large" Value="@Value" />
+<MudText Typo="Typo.caption" Class="mt-1">@Text</MudText>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public double Value { get; set; }
+    [Parameter] public Color Color { get; set; } = Color.Primary;
+    [Parameter] public string Text { get; set; } = string.Empty;
+}

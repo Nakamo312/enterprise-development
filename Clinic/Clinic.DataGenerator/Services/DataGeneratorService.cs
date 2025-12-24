@@ -67,7 +67,7 @@ public class DataGeneratorService
     {
         var specIds = _idTracker.GetIds("specialization");
 
-        if (!specIds.Any())
+        if (specIds.Count() == 0)
         {
             throw new InvalidOperationException("No specialization IDs available for generating doctors");
         }
@@ -89,7 +89,7 @@ public class DataGeneratorService
         var doctorIds = _idTracker.GetIds("doctor");
         var patientIds = _idTracker.GetIds("patient");
 
-        if (!doctorIds.Any() || !patientIds.Any())
+        if (doctorIds.Count() == 0 || patientIds.Count() == 0)
         {
             throw new InvalidOperationException($"Cannot create appointments - missing dependencies. Doctors: {doctorIds.Count}, Patients: {patientIds.Count}");
         }

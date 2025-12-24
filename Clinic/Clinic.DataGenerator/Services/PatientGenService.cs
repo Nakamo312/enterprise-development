@@ -1,7 +1,8 @@
 ﻿using Bogus;
+
 using Clinic.Application.Dtos.Patients;
-using Clinic.Domain.Enums;
 using Clinic.DataGenerator.Services.Interfaces;
+using Clinic.Domain.Enums;
 
 namespace Clinic.DataGenerator.Services;
 

@@ -1,0 +1,184 @@
+@using MudBlazor
+@using System.Net.Http.Json
+@using Clinic.Application.Dtos.Appointments
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="6">
+                <MudTextField Label="Дата и время *"
+                              @bind-Value="_dateTimeLocal"
+                              Required="true"
+                              RequiredError="Обязательное поле" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField Label="Кабинет *"
+                              @bind-Value="_roomNumber"
+                              Required="true"
+                              RequiredError="Обязательное поле"
+                              MaxLength="10" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudCheckBox T="bool" Label="Повторный визит"
+                             @bind-Value="_isRepeated"
+                             Color="Color.Warning" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudAutocomplete T="PatientDto"
+                                 Label="Пациент *"
+                                 @bind-Value="_selectedPatient"
+                                 SearchFunc="SearchPatients"
+                                 ToStringFunc="@(p => p?.FullName ?? string.Empty)"
+                                 Required="true"
+                                 RequiredError="Выберите пациента" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudAutocomplete T="DoctorDto"
+                                 Label="Врач *"
+                                 @bind-Value="_selectedDoctor"
+                                 SearchFunc="SearchDoctors"
+                                 ToStringFunc="@(d => d?.FullName ?? string.Empty)"
+                                 Required="true"
+                                 RequiredError="Выберите врача" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Default">Отмена</MudButton>
+        <MudButton OnClick="Submit" Color="Color.Primary"
+                   Disabled="@(_isSubmitting || !IsValidForm())">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
+            }
+            <span>Создать</span>
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnCreated { get; set; }
+
+    private string _dateTimeLocal = DateTime.Now.AddHours(1).ToString("yyyy-MM-ddTHH:mm");
+    private string _roomNumber = string.Empty;
+    private bool _isRepeated = false;
+    private bool _isSubmitting = false;
+
+    private PatientDto? _selectedPatient;
+    private DoctorDto? _selectedDoctor;
+
+    private List<PatientDto> _patients = new();
+    private List<DoctorDto> _doctors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPatientsAndDoctors();
+    }
+
+    private async Task LoadPatientsAndDoctors()
+    {
+        _patients = await Http.GetFromJsonAsync<List<PatientDto>>("api/patients") ?? new();
+        _doctors = await Http.GetFromJsonAsync<List<DoctorDto>>("api/doctors") ?? new();
+    }
+
+    private async Task<IEnumerable<PatientDto>> SearchPatients(string value, CancellationToken cancellationToken)
+    {
+        await Task.Delay(100, cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(value))
+            return Enumerable.Empty<PatientDto>();
+
+        return _patients.Where(p =>
+            p.FullName.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            p.PassportNumber.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .Take(10);
+    }
+
+    private async Task<IEnumerable<DoctorDto>> SearchDoctors(string value, CancellationToken cancellationToken)
+    {
+        await Task.Delay(100, cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(value))
+            return Enumerable.Empty<DoctorDto>();
+
+        return _doctors.Where(d => d.FullName.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .Take(10);
+    }
+
+    private bool IsValidForm()
+    {
+        return !string.IsNullOrWhiteSpace(_dateTimeLocal) &&
+               !string.IsNullOrWhiteSpace(_roomNumber) &&
+               _selectedPatient != null &&
+               _selectedDoctor != null;
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task Submit()
+    {
+        if (!IsValidForm()) return;
+    
+        _isSubmitting = true;
+    
+        try
+        {
+            var dto = new AppointmentCreateDto
+            {
+                DateTime = DateTime.Parse(_dateTimeLocal).ToUniversalTime(),
+                RoomNumber = _roomNumber,
+                IsRepeated = _isRepeated,
+                PatientId = _selectedPatient!.Id,
+                DoctorId = _selectedDoctor!.Id
+            };
+    
+            var response = await Http.PostAsJsonAsync("api/appointments", dto);
+    
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Запись успешно создана", Severity.Success); 
+                MudDialog.Close();
+                await OnCreated.InvokeAsync();
+            }
+            else
+            {
+                Snackbar.Add("Ошибка при создании записи", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ошибка: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    public class PatientDto
+    {
+        public Guid Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string PassportNumber { get; set; } = string.Empty;
+    }
+
+    public class DoctorDto
+    {
+        public Guid Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+    }
+}

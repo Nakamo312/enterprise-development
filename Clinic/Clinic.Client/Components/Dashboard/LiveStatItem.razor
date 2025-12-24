@@ -1,0 +1,14 @@
+﻿@using MudBlazor
+
+<MudListItem T="object">
+    <MudIcon Icon="@Icon" Class="mr-2" />
+    <MudText>@Text</MudText>
+    <MudChip T="string" Size="Size.Small" Color="@Color" Class="ml-auto">@Value</MudChip>
+</MudListItem>
+
+@code {
+    [Parameter] public string Icon { get; set; } = Icons.Material.Filled.Info;
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public Color Color { get; set; } = Color.Primary;
+}

@@ -1,6 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-
-var builder = DistributedApplication.CreateBuilder(args);
+﻿var builder = DistributedApplication.CreateBuilder(args);
 
 var password = builder.AddParameter("DatabasePassword");
 var dbName = "clinic";
@@ -17,8 +15,9 @@ var api = builder.AddProject<Projects.Clinic_Api>("clinic-api")
     .WaitFor(clinicDb);
 
 builder.AddProject<Projects.Clinic_Client>("clinic-client")
-    .WithReference(api)
-    .WithExternalHttpEndpoints();
+       .WithReference(api)
+       .WaitFor(api)
+       .WithEnvironment("Api__BaseUrl", api.GetEndpoint("https"));
 
 builder.AddProject<Projects.Clinic_RabbitMq_Consumer>("clinic-consumer")
     .WithReference(rabbitMq)

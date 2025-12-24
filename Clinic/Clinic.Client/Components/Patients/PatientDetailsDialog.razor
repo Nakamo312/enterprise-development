@@ -1,0 +1,176 @@
+@using MudBlazor
+@using Clinic.Application.Dtos.Patients
+@using Clinic.Domain.Enums
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (Patient != null)
+        {
+            <MudForm @ref="_form">
+                <MudText Typo="Typo.h6" Class="mb-2">Редактировать пациента</MudText>
+
+                <MudTextField Label="ФИО *"
+                              @bind-Value="_fullName"
+                              Required="true"
+                              RequiredError="ФИО обязательно" />
+
+                <MudTextField Label="Паспорт *"
+                              @bind-Value="_passportNumber"
+                              Required="true"
+                              RequiredError="Паспорт обязателен"
+                              MaxLength="11"
+                              Placeholder="XXXX XXXXXX" />
+
+                <MudSelect T="Gender"
+                           Label="Гендер *"
+                           @bind-Value="_gender"
+                           Required="true"
+                           RequiredError="Выберите гендер">
+                    @foreach (var g in Enum.GetValues<Gender>())
+                    {
+                        <MudSelectItem Value="g">@g.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudDatePicker Label="Дата рождения *"
+                               Date="@_dateOfBirth"
+                               DateChanged="@(date => _dateOfBirth = date ?? DateTime.Today)"
+                               MaxDate="DateTime.Today"
+                               Required="true"
+                               RequiredError="Дата рождения обязательна" />
+
+                <MudTextField Label="Адрес *"
+                              @bind-Value="_address"
+                              Required="true"
+                              RequiredError="Адрес обязателен"
+                              MaxLength="200" />
+
+                <MudSelect T="BloodGroup"
+                           Label="Группа крови *"
+                           @bind-Value="_bloodGroup"
+                           Required="true"
+                           RequiredError="Выберите группу крови">
+                    @foreach (var bg in Enum.GetValues<BloodGroup>())
+                    {
+                        <MudSelectItem Value="bg">@bg.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudSelect T="RhFactor"
+                           Label="Rh фактор *"
+                           @bind-Value="_rhFactor"
+                           Required="true"
+                           RequiredError="Выберите Rh фактор">
+                    @foreach (var rh in Enum.GetValues<RhFactor>())
+                    {
+                        <MudSelectItem Value="rh">@rh.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudTextField Label="Телефон"
+                              @bind-Value="_contactPhone"
+                              MaxLength="20"
+                              Placeholder="+7 (XXX) XXX-XX-XX" />
+
+            </MudForm>
+        }
+        else
+        {
+            <MudText>Нет данных для отображения</MudText>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Save" Disabled="@_isSaving">Сохранить</MudButton>
+        <MudButton Color="Color.Secondary" OnClick="Cancel" Disabled="@_isSaving">Отмена</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public PatientResponseDto Patient { get; set; } = default!;
+    [CascadingParameter] public IMudDialogInstance Dialog { get; set; } = default!;
+
+    private MudForm? _form;
+    private bool _isSaving;
+
+    private string _fullName = string.Empty;
+    private string _passportNumber = string.Empty;
+    private Gender _gender = Gender.Male;
+    private DateTime _dateOfBirth = new DateTime(1990, 1, 1);
+    private string _address = string.Empty;
+    private BloodGroup _bloodGroup = BloodGroup.A;
+    private RhFactor _rhFactor = RhFactor.P;
+    private string? _contactPhone;
+
+    protected override void OnParametersSet()
+    {
+        if (Patient == null) return;
+
+        _fullName = Patient.FullName;
+        _passportNumber = Patient.PassportNumber;
+        _gender = Patient.Gender;
+        _dateOfBirth = Patient.DateOfBirth.ToDateTime(TimeOnly.MinValue);
+        _address = Patient.Address;
+        _bloodGroup = Patient.BloodGroup;
+        _rhFactor = Patient.RhFactor;
+        _contactPhone = Patient.ContactPhone;
+    }
+
+    private void Cancel()
+    {
+        Dialog.Cancel();
+    }
+
+    private bool IsValidForm()
+    {
+        return !string.IsNullOrWhiteSpace(_fullName)
+            && !string.IsNullOrWhiteSpace(_passportNumber)
+            && !string.IsNullOrWhiteSpace(_address);
+    }
+
+    private async Task Save()
+    {
+        if (_form == null) return;
+
+        await _form.Validate();
+        if (!_form.IsValid) return;
+
+        _isSaving = true;
+
+        var dto = new PatientCreateDto
+            {
+                FullName = _fullName,
+                PassportNumber = _passportNumber,
+                Gender = _gender,
+                DateOfBirth = DateOnly.FromDateTime(_dateOfBirth),
+                Address = _address,
+                BloodGroup = _bloodGroup,
+                RhFactor = _rhFactor,
+                ContactPhone = _contactPhone
+            };
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/patients/{Patient.Id}", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Пациент успешно обновлён", Severity.Success);
+                Dialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Ошибка при обновлении пациента", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ошибка: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}

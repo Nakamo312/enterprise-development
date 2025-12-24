@@ -1,0 +1,26 @@
+﻿@using Blazorise
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="bg-primary text-white p-4 rounded-3">
+            <h1 class="display-6 mb-2">
+                <i class="bi @Icon me-2"></i>
+                @Title
+            </h1>
+            <p class="lead mb-0">@Subtitle</p>
+            @if (ShowDate)
+            {
+                <small class="text-white-50">
+                    <i class="bi bi-calendar3"></i> Сегодня: @DateTime.Today.ToString("dd.MM.yyyy")
+                </small>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Subtitle { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = "bi-heart-pulse";
+    [Parameter] public bool ShowDate { get; set; } = true;
+}

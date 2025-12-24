@@ -1,26 +1,31 @@
-﻿using Clinic.RabbitMq.Consumer.Configuration;
+﻿using System.Text;
+using System.Text.Json;
+
+using AutoMapper;
+
 using Clinic.Application.Dtos.Appointments;
 using Clinic.Application.Dtos.Doctors;
 using Clinic.Application.Dtos.Patients;
-using Clinic.Application.Dtos.Specializations;
 using Clinic.Application.Dtos.RabbitMq;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using RabbitMQ.Client;
-using System.Text;
-using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using RabbitMQ.Client.Events;
-using AutoMapper;
+using Clinic.Application.Dtos.Specializations;
 using Clinic.Domain.Models;
 using Clinic.Infrastructure.Repositories.Interfaces;
+using Clinic.RabbitMq.Consumer.Configuration;
 using Clinic.RabbitMq.Consumer.Services;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace Clinic.RabbitMq.Consumer.Consumers;
 
 /// <summary>
-/// RabbitMQ consumer service for processing entity creation messages
+/// RabbitMQ consumer service for processing entity creation messages.
+/// Uses a unified <see cref="EntityResponse"/> for both success and failure responses.
 /// </summary>
 public class RabbitMqConsumer(
         IConnectionFactory connectionFactory,
@@ -39,10 +44,8 @@ public class RabbitMqConsumer(
     };
 
     /// <summary>
-    /// Executes the main consumer loop
+    /// Main consumer loop.
     /// </summary>
-    /// <param name="stoppingToken">Cancellation token</param>
-    /// <returns>Task representing the asynchronous operation</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Starting RabbitMQ Consumer...");
@@ -60,10 +63,6 @@ public class RabbitMqConsumer(
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 
-    /// <summary>
-    /// Sets up RabbitMQ infrastructure (exchange, queues, bindings)
-    /// </summary>
-    /// <returns>Task representing the asynchronous operation</returns>
     private async Task SetupInfrastructureAsync()
     {
         if (_channel is null)
@@ -92,16 +91,10 @@ public class RabbitMqConsumer(
         }
     }
 
-    /// <summary>
-    /// Starts consumers for all configured queues
-    /// </summary>
-    /// <returns>Task representing the asynchronous operation</returns>
     private async Task StartConsumersAsync()
     {
         if (_channel is null)
-        {
             throw new InvalidOperationException("RabbitMQ channel is not initialized");
-        }
 
         foreach (var queueConfig in options.Value.Queues)
         {
@@ -111,18 +104,7 @@ public class RabbitMqConsumer(
             var consumer = new AsyncEventingBasicConsumer(_channel!);
             consumer.ReceivedAsync += async (sender, ea) =>
             {
-                try
-                {
-                    await ProcessMessageAsync(queueName, entityType, ea.Body.ToArray());
-                    await _channel!.BasicAckAsync(ea.DeliveryTag, false);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex,
-                        "Failed to process message from {Queue}, requeueing...", queueName);
-
-                    await _channel!.BasicNackAsync(ea.DeliveryTag, false, true);
-                }
+                await ProcessMessageAsync(queueName, entityType, ea.Body.ToArray(), ea.DeliveryTag);
             };
 
             await _channel.BasicConsumeAsync(
@@ -135,45 +117,63 @@ public class RabbitMqConsumer(
     }
 
     /// <summary>
-    /// Processes a single message from RabbitMQ
+    /// Processes a single message and sends a unified <see cref="EntityResponse"/>.
     /// </summary>
-    /// <param name="queueName">Name of the source queue</param>
-    /// <param name="entityType">Type of entity being processed</param>
-    /// <param name="body">Message body bytes</param>
-    /// <returns>Task representing the asynchronous operation</returns>
-    private async Task ProcessMessageAsync(string queueName, string entityType, byte[] body)
+    private async Task ProcessMessageAsync(string queueName, string entityType, byte[] body, ulong deliveryTag)
     {
         var bodyString = Encoding.UTF8.GetString(body);
-
         var envelope = JsonSerializer.Deserialize<MessageEnvelope>(bodyString, _jsonOptions);
-        if (envelope?.Payload is null)
+
+        var payloadHash = string.Empty;
+        try
         {
-            logger.LogWarning("Invalid message in {Queue}", queueName);
-            return;
+            if (envelope?.Payload is null)
+            {
+                payloadHash = "";
+                logger.LogWarning("Invalid message in {Queue}: payload is null", queueName);
+                await responseService.SendEntityResponse(entityType, payloadHash, success: false, reason: "Payload is null");
+                await _channel!.BasicAckAsync(deliveryTag, false);
+                return;
+            }
+
+            payloadHash = string.IsNullOrWhiteSpace(envelope.PayloadHash)
+                ? EntityResponseService.ComputeDataHash(envelope.Payload)
+                : envelope.PayloadHash;
+
+            Guid newEntityId = await ProcessEntity(queueName, envelope.Payload);
+
+            await responseService.SendEntityResponse(
+                entityType,
+                payloadHash,
+                success: true,
+                generatedId: newEntityId
+            );
+
+            logger.LogInformation("{EntityType} created: {Id}", entityType, newEntityId);
+            await _channel!.BasicAckAsync(deliveryTag, false);
         }
-
-        logger.LogInformation("Processing {EntityType}", entityType);
-
-        var newEntityId = await ProcessEntity(queueName, envelope.Payload);
-
-        var payloadHash = envelope.PayloadHash;
-        if (string.IsNullOrWhiteSpace(payloadHash))
+        catch (InvalidOperationException ex) when (ex.Message.Contains("Invalid Appointment"))
         {
-            payloadHash = EntityResponseService.ComputeDataHash(envelope.Payload);
+            logger.LogError(ex, "Invalid appointment in {Queue}, dropping message", queueName);
+
+            Dictionary<string, object>? additionalData = null;
+
+            if (ex.Data.Contains("AdditionalData"))
+            {
+                additionalData = ex.Data["AdditionalData"] as Dictionary<string, object>;
+            }
+
+            await responseService.SendEntityResponse(
+                entityType,
+                payloadHash,
+                success: false,
+                reason: ex.Message,
+                additionalData: additionalData);
+
+            await _channel!.BasicNackAsync(deliveryTag, false, false);
         }
-
-        await responseService.SendEntityCreatedResponse(entityType, newEntityId, payloadHash);
-
-        logger.LogInformation("{EntityType} created: {Id}", entityType, newEntityId);
     }
 
-    /// <summary>
-    /// Processes an entity based on queue type
-    /// </summary>
-    /// <param name="queue">Queue name indicating entity type</param>
-    /// <param name="payload">Entity payload data</param>
-    /// <returns>Generated entity ID</returns>
-    /// <exception cref="InvalidOperationException">Thrown for unknown queue types</exception>
     private async Task<Guid> ProcessEntity(string queue, object payload)
     {
         using var scope = serviceProvider.CreateScope();
@@ -187,102 +187,81 @@ public class RabbitMqConsumer(
         };
     }
 
-    /// <summary>
-    /// Processes a specialization entity
-    /// </summary>
-    /// <param name="scope">Service scope</param>
-    /// <param name="payload">Specialization payload data</param>
-    /// <returns>Generated specialization ID</returns>
     private async Task<Guid> ProcessSpecialization(IServiceScope scope, object payload)
     {
-        var dto = JsonSerializer.Deserialize<SpecializationCreateDto>(
-            JsonSerializer.Serialize(payload), _jsonOptions)!;
-
+        var dto = JsonSerializer.Deserialize<SpecializationCreateDto>(JsonSerializer.Serialize(payload), _jsonOptions)!;
         var repo = scope.ServiceProvider.GetRequiredService<IRepository<Specialization>>();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
-
-        var entity = mapper.Map<Specialization>(dto);
-        return await repo.CreateAsync(entity);
+        return await repo.CreateAsync(mapper.Map<Specialization>(dto));
     }
 
-    /// <summary>
-    /// Processes a patient entity
-    /// </summary>
-    /// <param name="scope">Service scope</param>
-    /// <param name="payload">Patient payload data</param>
-    /// <returns>Generated patient ID</returns>
     private async Task<Guid> ProcessPatient(IServiceScope scope, object payload)
     {
-        var dto = JsonSerializer.Deserialize<PatientCreateDto>(
-            JsonSerializer.Serialize(payload), _jsonOptions)!;
-
+        var dto = JsonSerializer.Deserialize<PatientCreateDto>(JsonSerializer.Serialize(payload), _jsonOptions)!;
         var repo = scope.ServiceProvider.GetRequiredService<IRepository<Patient>>();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
-
-        var entity = mapper.Map<Patient>(dto);
-        return await repo.CreateAsync(entity);
+        return await repo.CreateAsync(mapper.Map<Patient>(dto));
     }
 
-    /// <summary>
-    /// Processes a doctor entity
-    /// </summary>
-    /// <param name="scope">Service scope</param>
-    /// <param name="payload">Doctor payload data</param>
-    /// <returns>Generated doctor ID</returns>
     private async Task<Guid> ProcessDoctor(IServiceScope scope, object payload)
     {
-        var dto = JsonSerializer.Deserialize<DoctorCreateDto>(
-            JsonSerializer.Serialize(payload), _jsonOptions)!;
-
+        var dto = JsonSerializer.Deserialize<DoctorCreateDto>(JsonSerializer.Serialize(payload), _jsonOptions)!;
         var repo = scope.ServiceProvider.GetRequiredService<IRepository<Doctor>>();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
-
-        var entity = mapper.Map<Doctor>(dto);
-        return await repo.CreateAsync(entity);
+        return await repo.CreateAsync(mapper.Map<Doctor>(dto));
     }
 
-    /// <summary>
-    /// Processes an appointment entity
-    /// </summary>
-    /// <param name="scope">Service scope</param>
-    /// <param name="payload">Appointment payload data</param>
-    /// <returns>Generated appointment ID</returns>
     private async Task<Guid> ProcessAppointment(IServiceScope scope, object payload)
     {
-        var dto = JsonSerializer.Deserialize<AppointmentCreateDto>(
-            JsonSerializer.Serialize(payload), _jsonOptions)!;
-
-        logger.LogInformation("Appointment -> DoctorId:{Doc}, PatientId:{Pat}",
-            dto.DoctorId, dto.PatientId);
-
+        var dto = JsonSerializer.Deserialize<AppointmentCreateDto>(JsonSerializer.Serialize(payload), _jsonOptions)!;
+        logger.LogInformation("Appointment -> DoctorId:{Doc}, PatientId:{Pat}", dto.DoctorId, dto.PatientId);
         var repo = scope.ServiceProvider.GetRequiredService<IRepository<Appointment>>();
+        var doctorRepo = scope.ServiceProvider.GetRequiredService<IRepository<Doctor>>();
+        var patientRepo = scope.ServiceProvider.GetRequiredService<IRepository<Patient>>();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
 
-        var entity = mapper.Map<Appointment>(dto);
+        var doctor = await doctorRepo.GetAsync(dto.DoctorId);
+        var patient = await patientRepo.GetAsync(dto.PatientId);
 
+        if (doctor == null || patient == null)
+        {
+            var missingEntities = new List<string>();
+            var additionalData = new Dictionary<string, object>();
+
+            if (doctor == null)
+            {
+                missingEntities.Add($"DoctorId={dto.DoctorId}");
+                additionalData["InvalidDoctorIds"] = new List<Guid> { dto.DoctorId };
+            }
+
+            if (patient == null)
+            {
+                missingEntities.Add($"PatientId={dto.PatientId}");
+                additionalData["InvalidPatientIds"] = new List<Guid> { dto.PatientId };
+            }
+
+            var ex = new InvalidOperationException(
+                $"Invalid Appointment: referenced entities do not exist. {string.Join(", ", missingEntities)}");
+            ex.Data["AdditionalData"] = additionalData;
+            throw ex;
+        }
+
+        var entity = mapper.Map<Appointment>(dto);
         if (entity.DateTime.Kind == DateTimeKind.Local)
             entity.DateTime = entity.DateTime.ToUniversalTime();
 
         return await repo.CreateAsync(entity);
     }
 
-    /// <summary>
-    /// Stops the consumer service
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task representing the asynchronous operation</returns>
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Stopping RabbitMQ Consumer...");
-
         if (_channel != null)
         {
             await _channel.CloseAsync(cancellationToken);
             await _channel.DisposeAsync();
         }
-
         _connection?.Dispose();
-
         await base.StopAsync(cancellationToken);
     }
 }

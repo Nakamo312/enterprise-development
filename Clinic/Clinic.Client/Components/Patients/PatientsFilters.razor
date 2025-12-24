@@ -1,0 +1,71 @@
+﻿@using MudBlazor
+@using Microsoft.AspNetCore.Components
+
+<MudPaper Class="pa-4" Elevation="1">
+    <MudGrid Spacing="2" Class="d-flex align-items-center">
+
+        <MudItem xs="12" md="4" Class="d-flex align-center">
+            <MudTextField T="string"
+                          Value="@_searchName"
+                          Placeholder="Поиск по имени"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          ValueChanged="OnSearchNameChanged" />
+        </MudItem>
+
+        <MudItem xs="12" md="4" Class="d-flex align-center">
+            <MudTextField T="string"
+                          Value="@_searchPassport"
+                          Placeholder="Поиск по паспорту"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.AccountBox"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          ValueChanged="OnSearchPassportChanged" />
+        </MudItem>
+
+        <MudItem xs="12" md="4" Class="d-flex align-center">
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ResetFilters">
+                Сбросить фильтры
+            </MudButton>
+        </MudItem>
+
+    </MudGrid>
+</MudPaper>
+
+@code {
+    private string _searchName = string.Empty;
+    private string _searchPassport = string.Empty;
+
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    public string SearchName => _searchName;
+    public string SearchPassport => _searchPassport;
+
+    private async Task OnSearchNameChanged(string value)
+    {
+        _searchName = value;
+        await InvokeChanged();
+    }
+
+    private async Task OnSearchPassportChanged(string value)
+    {
+        _searchPassport = value;
+        await InvokeChanged();
+    }
+
+    private async Task ResetFilters()
+    {
+        _searchName = string.Empty;
+        _searchPassport = string.Empty;
+        await InvokeChanged();
+    }
+
+    private async Task InvokeChanged()
+    {
+        if (OnChanged.HasDelegate)
+            await OnChanged.InvokeAsync();
+    }
+}

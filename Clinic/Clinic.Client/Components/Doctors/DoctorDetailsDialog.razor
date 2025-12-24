@@ -1,0 +1,144 @@
+@using MudBlazor
+@using Clinic.Application.Dtos.Doctors
+@using Clinic.Application.Dtos.Specializations
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (Doctor != null)
+        {
+            <MudForm @ref="_form">
+                <MudText Typo="Typo.h6" Class="mb-2">Редактировать врача</MudText>
+
+                <MudTextField Label="ФИО *"
+                              @bind-Value="_fullName"
+                              Required="true"
+                              RequiredError="ФИО обязательно" />
+
+                <MudTextField Label="Паспорт *"
+                              @bind-Value="_passportNumber"
+                              Required="true"
+                              RequiredError="Паспорт обязателен"
+                              MaxLength="11"
+                              Placeholder="XXXX XXXXXX" />
+
+                <MudNumericField T="uint" Label="Год рождения *"
+                                 @bind-Value="_yearOfBirth"
+                                 Required="true"
+                                 Min="1900" Max="2100" />
+
+                <MudAutocomplete T="SpecializationResponseDto"
+                                 Label="Специализация *"
+                                 @bind-Value="_specialization"
+                                 SearchFunc="SearchSpecializations"
+                                 ToStringFunc="s => s?.Name ?? string.Empty"
+                                 Required="true"
+                                 RequiredError="Выберите специализацию"
+                                 Clearable="true" />
+
+                <MudNumericField T="int?" Label="Опыт (лет)"
+                                 @bind-Value="_experience"
+                                 Min="0" Max="100" />
+            </MudForm>
+        }
+        else
+        {
+            <MudText>Нет данных для отображения</MudText>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Save" Disabled="@_isSaving">Сохранить</MudButton>
+        <MudButton Color="Color.Secondary" OnClick="Cancel" Disabled="@_isSaving">Отмена</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public DoctorResponseDto Doctor { get; set; } = default!;
+    [CascadingParameter] public IMudDialogInstance Dialog { get; set; } = default!;
+
+    private MudForm? _form;
+    private bool _isSaving;
+
+    private string _fullName = string.Empty;
+    private string _passportNumber = string.Empty;
+    private uint _yearOfBirth = 1990;
+    private SpecializationResponseDto? _specialization;
+    private int? _experience;
+
+    private List<SpecializationResponseDto> _specializations = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Doctor == null) return;
+
+        _fullName = Doctor.FullName;
+        _passportNumber = Doctor.PassportNumber;
+        _yearOfBirth = Doctor.YearOfBirth;
+
+        _specializations = await Http.GetFromJsonAsync<List<SpecializationResponseDto>>("api/specializations") ?? new();
+
+        _specialization = _specializations.FirstOrDefault(s => s.Id == Doctor.SpecializationId);
+        _experience = Doctor.Experience.HasValue ? (int?)Doctor.Experience.Value : null;
+    }
+
+    private void Cancel() => Dialog.Cancel();
+
+    private async Task<IEnumerable<SpecializationResponseDto>> SearchSpecializations(string value, CancellationToken cancellationToken)
+    {
+        await Task.Delay(50, cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(value))
+            return _specializations;
+
+        return _specializations.Where(s => s.Name.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private async Task Save()
+    {
+        if (_form == null) return;
+
+        await _form.Validate();
+        if (!_form.IsValid) return;
+
+        if (_specialization == null)
+        {
+            Snackbar.Add("Выберите специализацию", Severity.Error);
+            return;
+        }
+
+        _isSaving = true;
+
+        var dto = new DoctorCreateDto
+            {
+                FullName = _fullName,
+                PassportNumber = _passportNumber,
+                YearOfBirth = _yearOfBirth,
+                SpecializationId = _specialization.Id,
+                Experience = _experience
+            };
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/doctors/{Doctor.Id}", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Врач успешно обновлён", Severity.Success);
+                Dialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Ошибка при обновлении врача", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ошибка: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}

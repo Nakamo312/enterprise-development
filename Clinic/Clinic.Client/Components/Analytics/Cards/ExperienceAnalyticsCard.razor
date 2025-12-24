@@ -1,0 +1,78 @@
+﻿@using MudBlazor
+@using Clinic.Application.Dtos.Doctors
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<BaseAnalyticsCard TItem="DoctorResponseDto"
+                   Title="Врачи по стажу работы"
+                   Icon="@Icons.Material.Filled.WorkHistory"
+                   ButtonText="Найти врачей"
+                   ButtonIcon="@Icons.Material.Filled.Search"
+                   ButtonColor="Color.Primary"
+                   Items="@_doctors"
+                   Class="@Class"
+                   IsLoading="@_isLoading"
+                   OnLoadData="LoadDoctorsByExperience"
+                   EmptyMessage="Врачи с указанным стажем не найдены">
+
+    <FilterContent>
+        <MudTextField T="int"
+                      Label="Минимальный стаж (лет)"
+                      @bind-Value="@_experienceYears"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.End"
+                      AdornmentIcon="@Icons.Material.Filled.Numbers"
+                      HelperText="Введите количество лет опыта" />
+    </FilterContent>
+
+    <TableContent>
+        <MudTable 
+            T="DoctorResponseDto" 
+            Items="@_doctors" 
+            Hover="true"
+            Class="flex-grow-1"
+            Style="max-height: 300px; overflow-y: auto;">
+            <HeaderContent>
+                <MudTh>ФИО врача</MudTh>
+                <MudTh>Год рождения</MudTh>
+                <MudTh>Стаж</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ФИО врача">@context.FullName</MudTd>
+                <MudTd DataLabel="Год рождения">@context.YearOfBirth</MudTd>
+                <MudTd DataLabel="Стаж">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary">
+                        @(context.Experience.HasValue ? $"{context.Experience.Value} лет" : "Не указан")
+                    </MudChip>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </TableContent>
+</BaseAnalyticsCard>
+
+@code {
+    [Parameter] public string Class { get; set; } = "h-100 d-flex flex-column";
+    private List<DoctorResponseDto>? _doctors;
+    private bool _isLoading = false;
+    private int _experienceYears = 5;
+
+    private async Task LoadDoctorsByExperience()
+    {
+        _isLoading = true;
+
+        try
+        {
+            var doctors = await Http.GetFromJsonAsync<List<DoctorResponseDto>>(
+                $"api/analytic/doctors/experience?experience={_experienceYears}");
+            _doctors = doctors?.OrderByDescending(d => d.Experience).ToList();
+        }
+        catch
+        {
+            _doctors = null;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

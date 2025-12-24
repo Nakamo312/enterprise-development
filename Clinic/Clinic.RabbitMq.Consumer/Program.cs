@@ -1,16 +1,18 @@
-﻿using Clinic.Infrastructure.Repositories;
+﻿using Clinic.Application.Profiles;
+using Clinic.Infrastructure.Persistence;
+using Clinic.Infrastructure.Repositories;
+using Clinic.Infrastructure.Repositories.Interfaces;
 using Clinic.RabbitMq.Consumer.Configuration;
 using Clinic.RabbitMq.Consumer.Consumers;
-using Clinic.Infrastructure.Repositories.Interfaces;
-using Clinic.Infrastructure.Persistence;
+using Clinic.RabbitMq.Consumer.Services;
+using Clinic.ServiceDefaults;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 using RabbitMQ.Client;
-using Clinic.RabbitMq.Consumer.Services;
-using Clinic.Application.Profiles;
-using Clinic.ServiceDefaults; 
 
 var builder = Host.CreateApplicationBuilder(args);
 

@@ -1,9 +1,10 @@
-﻿using Clinic.Application.Dtos.Specializations;
-using Clinic.DataGenerator.Services.Interfaces;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+
+using Clinic.Application.Dtos.Specializations;
+using Clinic.DataGenerator.Services.Interfaces;
 
 namespace Clinic.DataGenerator.Services;
 

@@ -1,4 +1,5 @@
 ﻿using Bogus;
+
 using Clinic.Application.Dtos.Doctors;
 using Clinic.DataGenerator.Services.Interfaces;
 
@@ -24,7 +25,7 @@ public class DoctorGenService : IDataGenService<DoctorCreateDto>
             .RuleFor(d => d.YearOfBirth, f => (uint)f.Date.Between(DateTime.Now.AddYears(-65), DateTime.Now.AddYears(-25)).Year)
             .RuleFor(d => d.SpecializationId, f =>
             {
-                if (!_currentSpecializationIds.Any())
+                if (_currentSpecializationIds.Count() == 0)
                     throw new InvalidOperationException("No specialization IDs available");
                 return f.PickRandom(_currentSpecializationIds);
             })
@@ -34,7 +35,7 @@ public class DoctorGenService : IDataGenService<DoctorCreateDto>
     /// <inheritdoc/>
     public DoctorCreateDto Generate()
     {
-        if (!_currentSpecializationIds.Any())
+        if (_currentSpecializationIds.Count() == 0)
             throw new InvalidOperationException("No specialization IDs available. Call SetSpecializationIds first.");
 
         var doctor = _faker.Generate();
@@ -47,7 +48,7 @@ public class DoctorGenService : IDataGenService<DoctorCreateDto>
     public IEnumerable<DoctorCreateDto> Generate(int count)
     {
         if (count < 1) throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        if (!_currentSpecializationIds.Any())
+        if (_currentSpecializationIds.Count() == 0)
             throw new InvalidOperationException("No specialization IDs available. Call SetSpecializationIds first.");
 
         var doctors = _faker.Generate(count).ToList();

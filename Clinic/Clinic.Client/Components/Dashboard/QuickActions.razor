@@ -1,0 +1,104 @@
+﻿@using MudBlazor
+@using Clinic.Client.Components.Appointments
+@using Clinic.Client.Components.Patients
+@using Clinic.Client.Components.Doctors
+@inject IDialogService DialogService
+
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.FlashOn" /> Быстрые действия
+            </MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth
+                           Size="Size.Large"
+                           StartIcon="@Icons.Material.Filled.AddCircle"
+                           OnClick="ShowAppointmentDialog">
+                    Новая запись
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Success"
+                           FullWidth
+                           Size="Size.Large"
+                           StartIcon="@Icons.Material.Filled.PersonAdd"
+                           OnClick="ShowPatientDialog">
+                    Новый пациент
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Info"
+                           FullWidth
+                           Size="Size.Large"
+                           StartIcon="@Icons.Material.Filled.Badge"
+                           OnClick="ShowDoctorDialog">
+                    Новый врач
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Warning"
+                           FullWidth
+                           Size="Size.Large"
+                           StartIcon="@Icons.Material.Filled.Analytics"
+                           Href="/analytics">
+                    Аналитика
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private async Task ShowAppointmentDialog()
+    {
+        var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                CloseButton = true,
+                FullWidth = true
+            };
+
+        var dialog = await DialogService.ShowAsync<AppointmentCreateDialog>("Создать запись на приём", options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+        }
+    }
+
+    private async Task ShowPatientDialog()
+    {
+        var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                CloseButton = true,
+                FullWidth = true
+            };
+
+        var dialog = await DialogService.ShowAsync<PatientCreateDialog>("Создать пациента", options);
+        await dialog.Result;
+    }
+
+    private async Task ShowDoctorDialog()
+    {
+        var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                CloseButton = true,
+                FullWidth = true
+            };
+
+        var dialog = await DialogService.ShowAsync<DoctorCreateDialog>("Создать врача", options);
+        await dialog.Result;
+    }
+}

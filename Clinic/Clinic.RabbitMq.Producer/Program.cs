@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
-using Clinic.DataGenerator.Services;
+﻿using Clinic.DataGenerator.Services;
 using Clinic.RabbitMq.Producer.Configuration;
 using Clinic.RabbitMq.Producer.Publishers;
+
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 using RabbitMQ.Client;
 
 var builder = Host.CreateApplicationBuilder(args);

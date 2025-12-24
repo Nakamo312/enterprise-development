@@ -1,0 +1,177 @@
+@using MudBlazor
+@using Clinic.Application.Dtos.Patients
+@using Clinic.Domain.Enums
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="2">
+
+            <MudItem xs="12" md="6">
+                <MudTextField Label="ФИО *"
+                              @bind-Value="_fullName"
+                              Required="true"
+                              RequiredError="ФИО обязательно" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField Label="Паспорт *"
+                              @bind-Value="_passportNumber"
+                              Required="true"
+                              RequiredError="Паспорт обязателен"
+                              MaxLength="11"
+                              Placeholder="XXXX XXXXXX" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSelect T="Gender"
+                           Label="Гендер *"
+                           @bind-Value="_gender"
+                           Required="true"
+                           RequiredError="Выберите гендер">
+                    @foreach (var g in Enum.GetValues<Gender>())
+                    {
+                        <MudSelectItem Value="g">@g.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudDatePicker Date="@_dateOfBirth"
+                               Label="Дата рождения *"
+                               Required="true"
+                               RequiredError="Дата рождения обязательна"
+                               MaxDate="DateTime.Today" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField Label="Адрес *"
+                              @bind-Value="_address"
+                              Required="true"
+                              RequiredError="Адрес обязателен"
+                              MaxLength="200" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSelect T="BloodGroup"
+                           Label="Группа крови *"
+                           @bind-Value="_bloodGroup"
+                           Required="true"
+                           RequiredError="Выберите группу крови">
+                    @foreach (var bg in Enum.GetValues<BloodGroup>())
+                    {
+                        <MudSelectItem Value="bg">@bg.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSelect T="RhFactor"
+                           Label="Rh фактор *"
+                           @bind-Value="_rhFactor"
+                           Required="true"
+                           RequiredError="Выберите Rh фактор">
+                    @foreach (var rh in Enum.GetValues<RhFactor>())
+                    {
+                        <MudSelectItem Value="rh">@rh.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField Label="Телефон"
+                              @bind-Value="_contactPhone"
+                              MaxLength="20"
+                              Placeholder="+7 (XXX) XXX-XX-XX" />
+            </MudItem>
+
+        </MudGrid>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Default">Отмена</MudButton>
+        <MudButton OnClick="Submit" Color="Color.Primary"
+                   Disabled="@(_isSubmitting || !IsValidForm())">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
+            }
+            <span>Создать</span>
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnCreated { get; set; }
+
+    private string _fullName = string.Empty;
+    private string _passportNumber = string.Empty;
+    private Gender _gender = Gender.Male;
+    private DateTime _dateOfBirth = new DateTime(1990, 1, 1);
+    private string _address = string.Empty;
+    private BloodGroup _bloodGroup = BloodGroup.A;
+    private RhFactor _rhFactor = RhFactor.P;
+    private string? _contactPhone;
+
+    private bool _isSubmitting = false;
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private bool IsValidForm()
+    {
+        return !string.IsNullOrWhiteSpace(_fullName)
+            && !string.IsNullOrWhiteSpace(_passportNumber)
+            && !string.IsNullOrWhiteSpace(_address);
+    }
+
+    private async Task Submit()
+    {
+        if (!IsValidForm()) return;
+
+        _isSubmitting = true;
+
+        try
+        {
+            var dto = new PatientCreateDto
+                {
+                    FullName = _fullName,
+                    PassportNumber = _passportNumber,
+                    Gender = _gender,
+                    DateOfBirth = DateOnly.FromDateTime(_dateOfBirth),
+                    Address = _address,
+                    BloodGroup = _bloodGroup,
+                    RhFactor = _rhFactor,
+                    ContactPhone = _contactPhone
+                };
+
+            var response = await Http.PostAsJsonAsync("api/patients", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Пациент успешно создан", Severity.Success);
+                MudDialog.Close();
+                await OnCreated.InvokeAsync();
+            }
+            else
+            {
+                Snackbar.Add("Ошибка при создании пациента", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ошибка: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

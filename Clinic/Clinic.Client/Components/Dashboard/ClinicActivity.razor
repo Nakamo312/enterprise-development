@@ -1,0 +1,116 @@
+﻿@using MudBlazor
+
+@using Clinic.Client.Components.Shared
+
+<MudCard Elevation="2" Class="mt-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.BarChart" /> Активность клиники
+            </MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudButton Variant="Variant.Text"
+                       Color="MudBlazor.Color.Primary"
+                       Size="MudBlazor.Size.Small"
+                       EndIcon="@Icons.Material.Filled.Refresh">
+                Обновить
+            </MudButton>
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <ActivityItem 
+                    Title="Загруженность"
+                    Value="85"
+                    Icon="@Icons.Material.Filled.Work"
+                    Color="Color.Success"
+                    Description="Высокая активность" />
+            </MudItem>
+            
+            <MudItem xs="12" sm="6" md="3">
+                <ActivityItem 
+                    Title="Удовлетворенность"
+                    Value="94"
+                    Icon="@Icons.Material.Filled.SentimentSatisfied"
+                    Color="Color.Success"
+                    Description="Отличные отзывы" />
+            </MudItem>
+            
+            <MudItem xs="12" sm="6" md="3">
+                <ActivityItem 
+                    Title="Эффективность"
+                    Value="75"
+                    Icon="@Icons.Material.Filled.TrendingUp"
+                    Color="Color.Info"
+                    Description="Хорошие показатели" />
+            </MudItem>
+            
+            <MudItem xs="12" sm="6" md="3">
+                <ActivityItem 
+                    Title="Доходность"
+                    Value="68"
+                    Icon="@Icons.Material.Filled.AttachMoney"
+                    Color="Color.Warning"
+                    Description="Стабильный рост" />
+            </MudItem>
+        </MudGrid>
+        
+        <MudDivider Class="my-4" />
+        
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle2" Class="mb-2">Активные кабинеты</MudText>
+                <MudList T="object" Dense>
+                    <MudListItem T="object">
+                        <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" Class="mr-2" />
+                        <MudText>Кабинет 201 - Кардиология</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Class="ml-auto">Занят</MudChip>
+                    </MudListItem>
+                    <MudListItem T="object">
+                        <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" Class="mr-2" />
+                        <MudText>Кабинет 205 - Рентген</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Class="ml-auto">Процедура</MudChip>
+                    </MudListItem>
+                    <MudListItem T="object">
+                        <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" Class="mr-2" />
+                        <MudText>Кабинет 210 - Терапия</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Class="ml-auto">Свободен</MudChip>
+                    </MudListItem>
+                </MudList>
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle2" Class="mb-2">Следующие записи</MudText>
+                <MudList T="object" Dense>
+                    <MudListItem T="object">
+                        <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="mr-2" />
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.body2">Иванов А.П.</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">14:30 - Терапия</MudText>
+                        </MudStack>
+                    </MudListItem>
+                    <MudListItem T="object">
+                        <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="mr-2" />
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.body2">Петрова С.И.</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">15:00 - Кардиология</MudText>
+                        </MudStack>
+                    </MudListItem>
+                    <MudListItem T="object">
+                        <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="mr-2" />
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.body2">Сидоров В.К.</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">15:45 - Рентген</MudText>
+                        </MudStack>
+                    </MudListItem>
+                </MudList>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+
+}

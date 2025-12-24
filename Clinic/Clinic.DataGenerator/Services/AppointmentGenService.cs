@@ -1,4 +1,5 @@
 ﻿using Bogus;
+
 using Clinic.Application.Dtos.Appointments;
 using Clinic.DataGenerator.Services.Interfaces;
 
@@ -25,13 +26,13 @@ public class AppointmentGenService : IDataGenService<AppointmentCreateDto>
             .RuleFor(a => a.IsRepeated, f => f.Random.Bool(0.3f))
             .RuleFor(a => a.PatientId, f =>
             {
-                if (!_currentPatientIds.Any())
+                if (_currentPatientIds.Count() == 0)
                     throw new InvalidOperationException("No patient IDs available");
                 return f.PickRandom(_currentPatientIds);
             })
             .RuleFor(a => a.DoctorId, f =>
             {
-                if (!_currentDoctorIds.Any())
+                if (_currentDoctorIds.Count() == 0)
                     throw new InvalidOperationException("No doctor IDs available");
                 return f.PickRandom(_currentDoctorIds);
             });
@@ -44,7 +45,7 @@ public class AppointmentGenService : IDataGenService<AppointmentCreateDto>
     /// <exception cref="InvalidOperationException">Thrown when no doctor or patient IDs are available</exception>
     public AppointmentCreateDto Generate()
     {
-        if (!_currentDoctorIds.Any() || !_currentPatientIds.Any())
+        if (_currentDoctorIds.Count() == 0 || _currentPatientIds.Count() == 0)
             throw new InvalidOperationException("No doctor or patient IDs available. Call SetDependencies first.");
 
         var appointment = _faker.Generate();
@@ -63,7 +64,7 @@ public class AppointmentGenService : IDataGenService<AppointmentCreateDto>
     public IEnumerable<AppointmentCreateDto> Generate(int count)
     {
         if (count < 1) throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        if (!_currentDoctorIds.Any() || !_currentPatientIds.Any())
+        if (_currentDoctorIds.Count() == 0 || _currentPatientIds.Count() == 0)
             throw new InvalidOperationException("No doctor or patient IDs available. Call SetDependencies first.");
 
         var appointments = _faker.Generate(count).ToList();
@@ -79,8 +80,8 @@ public class AppointmentGenService : IDataGenService<AppointmentCreateDto>
     /// <param name="patientIds">List of patient IDs</param>
     public void SetDependencies(List<Guid> doctorIds, List<Guid> patientIds)
     {
-        _currentDoctorIds = doctorIds ??  [];
-        _currentPatientIds = patientIds ??  [];
+        _currentDoctorIds = doctorIds ?? [];
+        _currentPatientIds = patientIds ?? [];
     }
 
     /// <summary>

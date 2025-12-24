@@ -1,0 +1,155 @@
+﻿@using MudBlazor
+@using Clinic.Application.Dtos.Doctors
+@using Clinic.Application.Dtos.Patients
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<BaseAnalyticsCard TItem="PatientResponseDto"
+                   Title="Пациенты по врачу"
+                   Icon="@Icons.Material.Filled.People"
+                   ButtonText="Показать пациентов"
+                   ButtonIcon="@Icons.Material.Filled.People"
+                   ButtonColor="MudBlazor.Color.Success"
+                   Class="@Class"
+                   Items="@_patients"
+                   IsLoading="@_isLoading"
+                   IsDisabled="@(_selectedDoctorId == Guid.Empty)"
+                   OnLoadData="LoadPatientsByDoctor"
+                   EmptyMessage="У выбранного врача нет пациентов">
+
+    <FilterContent>
+        <MudSelect T="Guid"
+                   Label="Выберите врача"
+                   @bind-Value="@_selectedDoctorId"
+                   Variant="Variant.Outlined"
+                   HelperText="Выберите врача из списка">
+            <MudSelectItem Value="@Guid.Empty">Выберите врача...</MudSelectItem>
+            @foreach (var doctor in _allDoctors)
+            {
+                <MudSelectItem Value="@doctor.Id">@doctor.FullName</MudSelectItem>
+            }
+        </MudSelect>
+    </FilterContent>
+
+    <TableContent>
+        <MudTable 
+            T="PatientResponseDto"
+            Items="@_patients" 
+            Hover="true"
+            Class="flex-grow-1"
+            Style="max-height: 300px; overflow-y: auto;">
+            <HeaderContent>
+                <MudTh>ФИО пациента</MudTh>
+                <MudTh>Дата рождения</MudTh>
+                <MudTh>Пол</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ФИО пациента">@context.FullName</MudTd>
+                <MudTd DataLabel="Дата рождения">@context.DateOfBirth.ToString("dd.MM.yyyy")</MudTd>
+                <MudTd DataLabel="Пол">
+                    <MudChip T="string"
+                             Size="MudBlazor.Size.Small"
+                             Color="@GetGenderColor(context.Gender.ToString())">
+                        @GetGenderDisplay(context.Gender.ToString())
+                    </MudChip>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </TableContent>
+</BaseAnalyticsCard>
+
+@code {
+    [Parameter] public string Class { get; set; } = "h-100 d-flex flex-column";
+    private List<DoctorResponseDto> _allDoctors = new();
+    private List<PatientResponseDto>? _patients;
+    private bool _isLoading = false;
+    private Guid _selectedDoctorId = Guid.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAllDoctors();
+    }
+
+    private async Task LoadAllDoctors()
+    {
+        try
+        {
+            var doctors = await Http.GetFromJsonAsync<List<DoctorResponseDto>>("api/doctors");
+            _allDoctors = doctors?.OrderBy(d => d.FullName).ToList() ?? new();
+        }
+        catch
+        {
+            _allDoctors = new();
+        }
+    }
+    public class DateOnlyJsonConverter : System.Text.Json.Serialization.JsonConverter<DateOnly>
+    {
+        private readonly string _format = "yyyy-MM-dd";
+
+        public override DateOnly Read(ref System.Text.Json.Utf8JsonReader reader, Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+        {
+            var value = reader.GetString()!;
+            return DateOnly.ParseExact(value, _format);
+        }
+
+        public override void Write(System.Text.Json.Utf8JsonWriter writer, DateOnly value, System.Text.Json.JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.ToString(_format));
+        }
+    }
+
+    private async Task LoadPatientsByDoctor()
+    {
+        if (_selectedDoctorId == Guid.Empty) return;
+
+        _isLoading = true;
+
+        try
+        {
+            var options = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters =
+            {
+                new DateOnlyJsonConverter(),
+                new System.Text.Json.Serialization.JsonStringEnumConverter()
+            }
+                };
+
+            var json = await Http.GetStringAsync($"api/analytic/doctors/{_selectedDoctorId}/patients");
+            _patients = System.Text.Json.JsonSerializer.Deserialize<List<PatientResponseDto>>(json, options)
+                        ?.OrderBy(p => p.FullName)
+                        .ToList() ?? new List<PatientResponseDto>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ошибка при загрузке пациентов: {ex.Message}", Severity.Error);
+            _patients = new List<PatientResponseDto>();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+
+    private MudBlazor.Color GetGenderColor(string gender)
+    {
+        return gender?.ToLower() switch
+        {
+            "male" or "мужской" or "0" => MudBlazor.Color.Primary,
+            "female" or "женский" or "1" => MudBlazor.Color.Info,
+            _ => MudBlazor.Color.Secondary
+        };
+    }
+
+    private string GetGenderDisplay(string gender)
+    {
+        return gender?.ToLower() switch
+        {
+            "male" or "мужской" or "0" => "Мужской",
+            "female" or "женский" or "1" => "Женский",
+            _ => gender ?? "Не указан"
+        };
+    }
+}

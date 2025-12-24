@@ -23,7 +23,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clinic.RabbitMq.Consumer", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clinic.RabbitMq.Producer", "Clinic.RabbitMq.Producer\Clinic.RabbitMq.Producer.csproj", "{201B3F36-ED06-4D3F-B791-F19577B562A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Clinic.Client", "Clinic.Client\Clinic.Client.csproj", "{57A78291-108B-4B75-9FC1-350415378BA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clinic.Client", "Clinic.Client\Clinic.Client.csproj", "{57A78291-108B-4B75-9FC1-350415378BA1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2168A26F-223E-48F6-8E30-88C8E85B1323}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

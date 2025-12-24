@@ -1,8 +1,167 @@
-﻿@using Clinic.Client.Components.Patients
-@page "/patients"
+﻿@page "/patients"
+@using MudBlazor
+@using System.Net.Http.Json
+@using Clinic.Domain.Models
+@using Clinic.Application.Dtos.Patients
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Clinic.Client.Components.Patients
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
-<PageTitle>Пациенты - Клиника</PageTitle>
+<PageTitle>Пациенты - Клиника "Здоровье+"</PageTitle>
 
-<div class="container-fluid py-4">
-    <PatientList/>
-</div>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="my-4">
+
+    <PatientsHeader OnCreate="ShowCreateModal" />
+
+    <PatientsFilters @ref="_filters" OnChanged="ApplyFilters" />
+
+    @if (_isLoading)
+    {
+        <div class="text-center py-6">
+            <MudProgressCircular Indeterminate Color="Color.Primary" />
+        </div>
+    }
+    else if (_filteredPatients.Count() == 0)
+    {
+        <EmptyState Title="Нет пациентов"
+                    Message="@(_filterHasValue ? "Попробуйте изменить фильтры" : "Начните с добавления первого пациента")"
+                    Icon="@Icons.Material.Filled.PersonOff"
+                    ButtonText="Добавить пациента"
+                    OnClick="ShowCreateModal" />
+    }
+    else
+    {
+        <MudTable Items="_filteredPatients" Hover="true" Dense="true">
+            <HeaderContent>
+                <MudTh>ФИО</MudTh>
+                <MudTh>Паспорт</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd DataLabel="ФИО">@context.FullName</MudTd>
+                <MudTd DataLabel="Паспорт">@context.PassportNumber</MudTd>
+                <MudTd Class="d-flex align-right">
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                   Color="Color.Primary"
+                                   OnClick="@(() => ShowDetailsModal(context.Id))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Error"
+                                   OnClick="@(() => HandleDeleteRequest(context.Id))" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    private readonly List<Patient> _allPatients = new();
+    private List<Patient> _filteredPatients = new();
+    private PatientsFilters? _filters;
+    private bool _isLoading;
+
+    private bool _filterHasValue =>
+        !string.IsNullOrWhiteSpace(_filters?.SearchName) ||
+        !string.IsNullOrWhiteSpace(_filters?.SearchPassport);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPatientsAsync();
+    }
+
+    private async Task LoadPatientsAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            options.Converters.Add(new JsonStringEnumConverter());
+
+            _allPatients.Clear();
+            var patients = await Http.GetFromJsonAsync<List<Patient>>("api/patients", options) ?? new();
+            _allPatients.AddRange(patients);
+
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ошибка загрузки данных: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+
+    private void ApplyFilters()
+    {
+        if (_filters == null) return;
+
+        IEnumerable<Patient> query = _allPatients;
+
+        if (!string.IsNullOrWhiteSpace(_filters.SearchName))
+            query = query.Where(p => p.FullName.Contains(_filters.SearchName, StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrWhiteSpace(_filters.SearchPassport))
+            query = query.Where(p => p.PassportNumber.Contains(_filters.SearchPassport, StringComparison.OrdinalIgnoreCase));
+
+        _filteredPatients = query.OrderBy(p => p.FullName).ToList();
+    }
+
+    private void ShowCreateModal()
+    {
+        DialogService.ShowAsync<PatientCreateDialog>("Добавить пациента",
+            new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Medium });
+    }
+
+    private async Task ShowDetailsModal(Guid id)
+    {
+        try
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            options.Converters.Add(new JsonStringEnumConverter());
+
+            var patientDto = await Http.GetFromJsonAsync<PatientResponseDto>($"api/patients/{id}", options);
+
+            if (patientDto != null)
+            {
+                var parameters = new DialogParameters { ["Patient"] = patientDto };
+                await DialogService.ShowAsync<PatientDetailsDialog>("Детали пациента", parameters,
+                    new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Medium });
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ошибка при загрузке деталей: {ex.Message}", Severity.Error);
+        }
+    }
+
+
+    private async Task HandleDeleteRequest(Guid id)
+    {
+        bool? confirmed = await DialogService.ShowMessageBox(
+            "Подтверждение",
+            "Удалить пациента?",
+            yesText: "Да",
+            noText: "Отмена",
+            options: new DialogOptions { MaxWidth = MaxWidth.ExtraSmall }
+        );
+
+        if (confirmed != true) return;
+
+        var response = await Http.DeleteAsync($"api/patients/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Пациент удалён", Severity.Success);
+            await LoadPatientsAsync();
+        }
+        else
+        {
+            Snackbar.Add("Ошибка удаления", Severity.Error);
+        }
+    }
+}

@@ -1,0 +1,36 @@
+﻿@using MudBlazor
+
+<MudGrid Spacing="2" Class="mb-4">
+    <MudItem xs="12">
+        <MudCard>
+            <MudCardContent>
+                <MudGrid Spacing="2" Class="d-flex align-items-center">
+                    <MudItem xs="12" md="8">
+                        <MudText Typo="Typo.h5" Class="mb-0">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
+                            Пациенты
+                        </MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Управление информацией о пациентах клиники
+                        </MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <div class="d-flex justify-end">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       OnClick="@(() => OnCreate.InvokeAsync())">
+                                Новый пациент
+                            </MudButton>
+                        </div>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public EventCallback OnCreate { get; set; }
+}

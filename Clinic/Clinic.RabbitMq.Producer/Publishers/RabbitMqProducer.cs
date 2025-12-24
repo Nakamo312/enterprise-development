@@ -12,15 +12,12 @@ using System.Text.Json;
 
 namespace Clinic.RabbitMq.Producer.Publishers;
 
-/// <summary>
-/// RabbitMQ producer service for generating and publishing test data
-/// </summary>
 public class RabbitMqProducer(
-        IConnectionFactory connectionFactory,
-        ILogger<RabbitMqProducer> logger,
-        IOptions<RabbitMqOptions> options,
-        DataGeneratorService dataGeneratorService,
-        EntityIdTracker idTracker) : BackgroundService
+    IConnectionFactory connectionFactory,
+    ILogger<RabbitMqProducer> logger,
+    IOptions<RabbitMqOptions> options,
+    DataGeneratorService dataGeneratorService,
+    EntityIdTracker idTracker) : BackgroundService
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -29,12 +26,7 @@ public class RabbitMqProducer(
         WriteIndented = false
     };
 
-/// <summary>
-/// Executes the main producer loop
-/// </summary>
-/// <param name="stoppingToken">Cancellation token</param>
-/// <returns>Task representing the asynchronous operation</returns>
-protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -47,9 +39,7 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
                 try
                 {
                     await SetupResponseConsumer(responseChannel, stoppingToken);
-
                     publishChannels = await CreatePublishChannels(connection, stoppingToken);
-
                     await GenerateAndPublishSequence(publishChannels, stoppingToken);
 
                     logger.LogInformation("Completed generation cycle, waiting for next batch");
@@ -68,55 +58,108 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         }
     }
 
-    /// <summary>
-    /// Sets up the response consumer for receiving entity creation confirmations
-    /// </summary>
-    /// <param name="channel">Channel for response consumption</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task representing the asynchronous operation</returns>
-    private async Task SetupResponseConsumer(IChannel channel, CancellationToken cancellationToken)
-    {
-        await channel.QueueDeclareAsync(
-            queue: options.Value.ResponseQueue,
-            durable: true,
-            exclusive: false,
-            autoDelete: false,
-            cancellationToken: cancellationToken);
+private async Task SetupResponseConsumer(IChannel channel, CancellationToken cancellationToken)
+{
+    await channel.QueueDeclareAsync(
+        queue: options.Value.ResponseQueue,
+        durable: true,
+        exclusive: false,
+        autoDelete: false,
+        cancellationToken: cancellationToken);
 
-        var consumer = new AsyncEventingBasicConsumer(channel);
-        consumer.ReceivedAsync += async (model, ea) =>
+    var consumer = new AsyncEventingBasicConsumer(channel);
+    consumer.ReceivedAsync += async (model, ea) =>
+    {
+        try
         {
-            try
+            var bodySpan = ea.Body.ToArray();
+            var response = JsonSerializer.Deserialize<EntityResponse>(bodySpan, _jsonOptions);
+
+            if (response == null)
             {
-                var response = JsonSerializer.Deserialize<EntityCreatedResponse>(ea.Body.Span, _jsonOptions);
-                if (response != null)
+                logger.LogWarning("Received unknown message format in response queue");
+                return;
+            }
+
+            if (response.Success && response.GeneratedId.HasValue)
+            {
+                idTracker.RegisterCreatedId(response.EntityType, response.GeneratedId.Value, response.PayloadHash);
+                logger.LogInformation("Received response for {EntityType} with ID {Id}",
+                    response.EntityType, response.GeneratedId);
+            }
+            else
+            {
+                if (response.EntityType == "appointment" && response.AdditionalData != null)
                 {
-                    idTracker.RegisterCreatedId(response.EntityType, response.GeneratedId, response.OriginalDataHash);
-                    logger.LogInformation("Received response for {EntityType} with ID {Id}", response.EntityType, response.GeneratedId);
+                    // Удаляем невалидные DoctorId
+                    if (response.AdditionalData.TryGetValue("InvalidDoctorIds", out var doctorIdsObj))
+                    {
+                        if (doctorIdsObj is System.Text.Json.JsonElement doctorIdsElement)
+                        {
+                            try
+                            {
+                                var invalidDoctorIds = doctorIdsElement.Deserialize<List<Guid>>(_jsonOptions);
+                                if (invalidDoctorIds != null)
+                                {
+                                    foreach (var doctorId in invalidDoctorIds)
+                                    {
+                                        idTracker.RemoveCreatedIdByGuid("doctor", doctorId);
+                                        logger.LogWarning("Removed invalid DoctorId {Id} from tracker", doctorId);
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogError(ex, "Failed to deserialize InvalidDoctorIds");
+                            }
+                        }
+                    }
+
+                    if (response.AdditionalData.TryGetValue("InvalidPatientIds", out var patientIdsObj))
+                    {
+                        if (patientIdsObj is System.Text.Json.JsonElement patientIdsElement)
+                        {
+                            try
+                            {
+                                var invalidPatientIds = patientIdsElement.Deserialize<List<Guid>>(_jsonOptions);
+                                if (invalidPatientIds != null)
+                                {
+                                    foreach (var patientId in invalidPatientIds)
+                                    {
+                                        idTracker.RemoveCreatedIdByGuid("patient", patientId);
+                                        logger.LogWarning("Removed invalid PatientId {Id} from tracker", patientId);
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogError(ex, "Failed to deserialize InvalidPatientIds");
+                            }
+                        }
+                    }
                 }
 
-                await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken);
+                idTracker.ReturnToAvailable(response.EntityType, response.PayloadHash);
+                logger.LogWarning("Received invalid response for {EntityType}, reason: {Reason}",
+                    response.EntityType, response.Reason);
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to process response message");
-                await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false, cancellationToken: cancellationToken);
-            }
-        };
 
-        await channel.BasicConsumeAsync(
-            queue: options.Value.ResponseQueue,
-            autoAck: false,
-            consumer: consumer,
-            cancellationToken: cancellationToken);
-    }
+            await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to process response message");
+            await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false, cancellationToken: cancellationToken);
+        }
+    };
 
-    /// <summary>
-    /// Creates publish channels for different entity types
-    /// </summary>
-    /// <param name="connection">RabbitMQ connection</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Dictionary of routing keys to channels</returns>
+    await channel.BasicConsumeAsync(
+        queue: options.Value.ResponseQueue,
+        autoAck: false,
+        consumer: consumer,
+        cancellationToken: cancellationToken);
+}
+
     private async Task<Dictionary<string, IChannel>> CreatePublishChannels(IConnection connection, CancellationToken cancellationToken)
     {
         var channels = new Dictionary<string, IChannel>();
@@ -139,12 +182,6 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         return channels;
     }
 
-    /// <summary>
-    /// Generates and publishes entities in the correct dependency order
-    /// </summary>
-    /// <param name="channels">Publish channels dictionary</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task representing the asynchronous operation</returns>
     private async Task GenerateAndPublishSequence(Dictionary<string, IChannel> channels, CancellationToken cancellationToken)
     {
         await ProcessSpecializations(channels["specialization.create"], cancellationToken);
@@ -153,12 +190,6 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         await ProcessAppointments(channels["appointment.create"], cancellationToken);
     }
 
-    /// <summary>
-    /// Processes and publishes specialization entities
-    /// </summary>
-    /// <param name="channel">Publish channel</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task representing the asynchronous operation</returns>
     private async Task ProcessSpecializations(IChannel channel, CancellationToken cancellationToken)
     {
         var availableCount = dataGeneratorService.SpecializationsRemainingCount;
@@ -169,44 +200,30 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         }
 
         var toGenerate = Math.Min(options.Value.BatchSize, availableCount);
-        logger.LogInformation("Generating {Count} of {Available} available specializations",
-            toGenerate, availableCount);
+        logger.LogInformation("Generating {Count} of {Available} available specializations", toGenerate, availableCount);
 
         var specializations = dataGeneratorService.GenerateSpecializations(toGenerate);
 
-        if (specializations.Any())
+        if (specializations.Count() != 0)
         {
             await PublishBatchWithTracking(channel, "specialization", "specialization.create", specializations, cancellationToken);
-            await WaitForEntityCreation("specialization", toGenerate, specializations, cancellationToken);
+            await WaitForEntityCreation("specialization", specializations, cancellationToken);
         }
     }
 
-    /// <summary>
-    /// Processes and publishes patient entities
-    /// </summary>
-    /// <param name="channel">Publish channel</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task representing the asynchronous operation</returns>
     private async Task ProcessPatients(IChannel channel, CancellationToken cancellationToken)
     {
         var patients = dataGeneratorService.GeneratePatients(options.Value.BatchSize);
         await PublishBatchWithTracking(channel, "patient", "patient.create", patients, cancellationToken);
-        await WaitForEntityCreation("patient", options.Value.BatchSize, patients, cancellationToken);
+        await WaitForEntityCreation("patient", patients, cancellationToken);
     }
 
-
-    /// <summary>
-    /// Processes and publishes doctor entities
-    /// </summary>
-    /// <param name="channel">Publish channel</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task representing the asynchronous operation</returns>
     private async Task ProcessDoctors(IChannel channel, CancellationToken cancellationToken)
     {
         var specIds = idTracker.GetIds("specialization");
         logger.LogInformation("Available specialization IDs for doctors: {Count}", specIds.Count);
 
-        if (!specIds.Any())
+        if (specIds.Count() == 0)
         {
             logger.LogWarning("No specialization IDs available for generating doctors");
             return;
@@ -214,21 +231,15 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 
         var doctors = dataGeneratorService.GenerateDoctors(options.Value.BatchSize);
         await PublishBatchWithTracking(channel, "doctor", "doctor.create", doctors, cancellationToken);
-        await WaitForEntityCreation("doctor", options.Value.BatchSize, doctors, cancellationToken);
+        await WaitForEntityCreation("doctor", doctors, cancellationToken);
     }
 
-    /// <summary>
-    /// Processes and publishes appointment entities
-    /// </summary>
-    /// <param name="channel">Publish channel</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task representing the asynchronous operation</returns>
     private async Task ProcessAppointments(IChannel channel, CancellationToken cancellationToken)
     {
         var doctorIds = idTracker.GetIds("doctor");
         var patientIds = idTracker.GetIds("patient");
 
-        if (!doctorIds.Any() || !patientIds.Any())
+        if (doctorIds.Count() == 0 || patientIds.Count() == 0)
         {
             logger.LogWarning("Cannot create appointments - missing dependencies. Doctors: {DoctorCount}, Patients: {PatientCount}",
                 doctorIds.Count, patientIds.Count);
@@ -240,21 +251,12 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 
         var appointments = dataGeneratorService.GenerateAppointments(options.Value.BatchSize);
         await PublishBatchWithTracking(channel, "appointment", "appointment.create", appointments, cancellationToken);
-        await WaitForEntityCreation("appointment", options.Value.BatchSize, appointments, cancellationToken);
+        await WaitForEntityCreation("appointment", appointments, cancellationToken);
     }
 
-    /// <summary>
-    /// Publishes a batch of entities with tracking for response correlation
-    /// </summary>
-    /// <param name="channel">Publish channel</param>
-    /// <param name="entityType">Type of entity being published</param>
-    /// <param name="routingKey">Routing key for publishing</param>
-    /// <param name="batch">Batch of entities to publish</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task representing the asynchronous operation</returns>
     private async Task PublishBatchWithTracking(IChannel channel, string entityType, string routingKey, List<object> batch, CancellationToken cancellationToken)
     {
-        if (!batch.Any()) return;
+        if (batch.Count() == 0) return;
 
         try
         {
@@ -312,16 +314,10 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         }
     }
 
-    /// <summary>
-    /// Waits for entity creation confirmations
-    /// </summary>
-    /// <param name="entityType">Type of entity to wait for</param>
-    /// <param name="expectedCount">Expected number of entities</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task representing the asynchronous operation</returns>
-    /// <exception cref="TimeoutException">Thrown when waiting times out</exception>
-    private async Task WaitForEntityCreation(string entityType, int expectedCount, List<object> batch, CancellationToken cancellationToken)
+    private async Task WaitForEntityCreation(string entityType, List<object> batch, CancellationToken cancellationToken)
     {
+        var expectedCount = batch.Count;
+
         for (var attempt = 1; attempt <= options.Value.PublishMaxRetries; attempt++)
         {
             try
@@ -331,8 +327,14 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 
                 while (DateTime.UtcNow - startTime < timeout)
                 {
-                    var createdCount = idTracker.GetCreatedCount(entityType);
-                    if (createdCount >= expectedCount)
+                    var createdCount = batch.Count(item =>
+                    {
+                        var json = JsonSerializer.Serialize(item, _jsonOptions);
+                        var hash = ComputeDataHashFromString(json);
+                        return idTracker.IsCreated(entityType, hash);
+                    });
+
+                    if (createdCount == batch.Count)
                     {
                         logger.LogInformation("Successfully received {Count} {EntityType} IDs", createdCount, entityType);
                         return;
@@ -341,7 +343,7 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
                 }
 
                 logger.LogWarning("Attempt {Attempt} timed out waiting for {EntityType} entities. Received {Received}/{Expected}",
-                    attempt, entityType, idTracker.GetCreatedCount(entityType), expectedCount);
+                    attempt, entityType, idTracker.GetIds(entityType).Count, expectedCount);
             }
             catch (OperationCanceledException)
             {
@@ -366,22 +368,12 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         }
     }
 
-    /// <summary>
-    /// Computes SHA256 hash from string data
-    /// </summary>
-    /// <param name="json">JSON string to hash</param>
-    /// <returns>Base64 encoded hash string</returns>
     private static string ComputeDataHashFromString(string json)
     {
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(json));
         return Convert.ToBase64String(hash);
     }
 
-    /// <summary>
-    /// Cleans up publish channels
-    /// </summary>
-    /// <param name="publishChannels">Dictionary of channels to clean up</param>
-    /// <returns>Task representing the asynchronous operation</returns>
     private async Task CleanupChannels(Dictionary<string, IChannel> publishChannels)
     {
         foreach (var channel in publishChannels.Values)

@@ -1,0 +1,31 @@
+﻿@using MudBlazor
+
+<MudCard Outlined Class="h-100">
+    <MudCardContent>
+        <MudChip T="string" Size="Size.Small" Color="@Color" Class="mb-2">@Category</MudChip>
+        <MudText Typo="Typo.h6" Class="mb-2">@Title</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">@Description</MudText>
+
+        <MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" />
+                @Date
+            </MudText>
+
+            <MudButton Variant="Variant.Text"
+                       Color="@Color"
+                       Size="Size.Small"
+                       EndIcon="@Icons.Material.Filled.ArrowForward">
+                Подробнее
+            </MudButton>
+        </MudStack>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public string Category { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public string Date { get; set; } = string.Empty;
+    [Parameter] public Color Color { get; set; } = Color.Primary;
+}

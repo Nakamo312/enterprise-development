@@ -1,0 +1,125 @@
+﻿@using MudBlazor
+@using Clinic.Application.Dtos.Patients
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<BaseAnalyticsCard TItem="PatientResponseDto"
+                   Title="Пациенты 30+ с разными врачами"
+                   Icon="@Icons.Material.Filled.PersonSearch"
+                   ButtonText="Показать отчет"
+                   ButtonIcon="@Icons.Material.Filled.Description"
+                   ButtonColor="Color.Info"
+                   Class="@Class"
+                   Items="@_patients"
+                   IsLoading="@_isLoading"
+                   OnLoadData="LoadPatientsOver30MultipleDoctors"
+                   EmptyMessage="Подходящие пациенты не найдены">
+
+    <FilterContent>
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+            <MudText>Пациенты старше 30 лет, которые посещали более одного врача</MudText>
+        </MudAlert>
+    </FilterContent>
+
+    <TableContent>
+        <MudTable 
+            T="PatientResponseDto" 
+            Items="@_patients" 
+            Hover="true"
+            Class="flex-grow-1"
+            Style="max-height: 300px; overflow-y: auto;">
+            <HeaderContent>
+                <MudTh>ФИО пациента</MudTh>
+                <MudTh>Дата рождения</MudTh>
+                <MudTh>Возраст</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ФИО пациента">@context.FullName</MudTd>
+                <MudTd DataLabel="Дата рождения">@context.DateOfBirth.ToString("dd.MM.yyyy")</MudTd>
+                <MudTd DataLabel="Возраст">
+                    <MudChip T="string" 
+                        Size="Size.Small" 
+                        Color="Color.Info">
+                        @CalculateAge(context.DateOfBirth) лет
+                    </MudChip>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </TableContent>
+</BaseAnalyticsCard>
+
+@code {
+    [Parameter] public string Class { get; set; } = "h-100 d-flex flex-column";
+    private List<PatientResponseDto>? _patients;
+    private bool _isLoading = false;
+
+    public class PatientResponseDtoJson
+    {
+        public string PassportNumber { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Gender { get; set; } = string.Empty;
+        public DateOnly DateOfBirth { get; set; }
+        public string Address { get; set; } = string.Empty;
+        public string BloodGroup { get; set; } = string.Empty;
+        public string RhFactor { get; set; } = string.Empty;
+        public string? ContactPhone { get; set; }
+    }
+
+    private async Task LoadPatientsOver30MultipleDoctors()
+    {
+        _isLoading = true;
+        try
+        {
+            _isLoading = true;
+
+            var options = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters =
+                    { 
+                        new DateOnlyJsonConverter(),
+                        new System.Text.Json.Serialization.JsonStringEnumConverter()
+                    }
+                };
+
+            var json = await Http.GetStringAsync("api/analytic/patients/over30-multiple-doctors");
+            _patients = System.Text.Json.JsonSerializer.Deserialize<List<PatientResponseDto>>(json, options)
+                        ?.OrderBy(p => p.FullName)
+                        .ToList() ?? new List<PatientResponseDto>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ошибка при загрузке пациентов: {ex.Message}", Severity.Error);
+
+            _patients = new List<PatientResponseDto>();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private int CalculateAge(DateOnly birthDate)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var age = today.Year - birthDate.Year;
+        if (birthDate > today.AddYears(-age)) age--;
+        return age;
+    }
+
+    public class DateOnlyJsonConverter : System.Text.Json.Serialization.JsonConverter<DateOnly>
+    {
+        private readonly string _format = "yyyy-MM-dd";
+
+        public override DateOnly Read(ref System.Text.Json.Utf8JsonReader reader, Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+        {
+            var value = reader.GetString()!;
+            return DateOnly.ParseExact(value, _format);
+        }
+
+        public override void Write(System.Text.Json.Utf8JsonWriter writer, DateOnly value, System.Text.Json.JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.ToString(_format));
+        }
+    }
+}

@@ -1,0 +1,36 @@
+﻿@using Clinic.Client.Components.Shared
+
+<MudCard Elevation="2" Class="mt-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.Speed" /> Прогресс дня
+            </MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudGrid>
+            <MudItem xs="12" md="4">
+                <ProgressItem 
+                    Title="Записи сегодня"
+                    Value="43"
+                    Color="Color.Success"
+                    Text="18 из 42 завершено" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <ProgressItem 
+                    Title="Занятость врачей"
+                    Value="78"
+                    Color="Color.Info"
+                    Text="19 из 24 врачей работают" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <ProgressItem 
+                    Title="Загрузка кабинетов"
+                    Value="53"
+                    Color="Color.Warning"
+                    Text="8 из 15 кабинетов заняты" />
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>

@@ -1,0 +1,35 @@
+﻿@using MudBlazor
+@using MColor = MudBlazor.Color
+@using MSize = MudBlazor.Size
+@using MTypo = MudBlazor.Typo
+@using MAlignItems = MudBlazor.AlignItems
+@using MJustify = MudBlazor.Justify
+
+<MudCard Elevation="2">
+    <MudCardContent>
+        <MudStack Row AlignItems="MAlignItems.Center" Justify="MJustify.SpaceBetween">
+            <MudStack Spacing="0">
+                <MudText Typo="MTypo.body2" Color="MColor.Secondary">@Title</MudText>
+                <MudText Typo="MTypo.h4">@Value</MudText>
+            </MudStack>
+            <MudAvatar Color="@IconColor" Size="MSize.Large">
+                <MudIcon Icon="@Icon" />
+            </MudAvatar>
+        </MudStack>
+        @if (!string.IsNullOrEmpty(ChipText))
+        {
+            <MudChip T="string" Size="MSize.Small" Color="@ChipColor" Class="mt-2">
+                @ChipText
+            </MudChip>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = string.Empty;
+    [Parameter] public MColor IconColor { get; set; } = MColor.Primary;
+    [Parameter] public string? ChipText { get; set; }
+    [Parameter] public MColor ChipColor { get; set; } = MColor.Primary;
+}

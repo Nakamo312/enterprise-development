@@ -1,0 +1,141 @@
+@using MudBlazor
+@using Clinic.Application.Dtos.Doctors
+@using Clinic.Domain.Models
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="2">
+
+            <MudItem xs="12" md="6">
+                <MudTextField Label="ФИО *"
+                              @bind-Value="_fullName"
+                              Required="true"
+                              RequiredError="ФИО обязательно" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField Label="Паспорт *"
+                              @bind-Value="_passportNumber"
+                              Required="true"
+                              RequiredError="Паспорт обязателен"
+                              MaxLength="11"
+                              Placeholder="XXXX XXXXXX" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField T="uint" Label="Год рождения *"
+                                 @bind-Value="_yearOfBirth"
+                                 Required="true"
+                                 Min="1900"
+                                 Max="2100" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField T="int" Label="Стаж (лет)"
+                                 @bind-Value="_experienceValue"
+                                 Min="0"
+                                 Max="100" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudAutocomplete T="Specialization"
+                                 Label="Специализация *"
+                                 SearchFunc="SearchSpecializations"
+                                 @bind-Value="_specialization"
+                                 ToStringFunc="@(s => s?.Name ?? string.Empty)"
+                                 Required="true"
+                                 RequiredError="Выберите специализацию" />
+            </MudItem>
+
+        </MudGrid>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Default">Отмена</MudButton>
+        <MudButton OnClick="Submit" Color="Color.Primary"
+                   Disabled="@(_isSubmitting || !IsValidForm())">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
+            }
+            <span>Создать</span>
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public EventCallback OnCreated { get; set; }
+
+    private string _fullName = string.Empty;
+    private string _passportNumber = string.Empty;
+    private uint _yearOfBirth = 1990;
+    private int _experienceValue = 0;
+    private Specialization? _specialization;
+
+    private bool _isSubmitting = false;
+    private List<Specialization> _specializations = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _specializations = await Http.GetFromJsonAsync<List<Specialization>>("api/specializations") ?? new();
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private bool IsValidForm()
+        => !string.IsNullOrWhiteSpace(_fullName)
+           && !string.IsNullOrWhiteSpace(_passportNumber)
+           && _specialization != null;
+
+    private async Task Submit()
+    {
+        if (!IsValidForm()) return;
+
+        _isSubmitting = true;
+
+        try
+        {
+            var dto = new DoctorCreateDto
+                {
+                    FullName = _fullName,
+                    PassportNumber = _passportNumber,
+                    YearOfBirth = _yearOfBirth,
+                    Experience = _experienceValue,
+                    SpecializationId = _specialization!.Id
+                };
+
+            var response = await Http.PostAsJsonAsync("api/doctors", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Врач успешно создан", Severity.Success);
+                MudDialog.Close();
+                await OnCreated.InvokeAsync();
+            }
+            else
+            {
+                Snackbar.Add("Ошибка при создании врача", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ошибка: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private async Task<IEnumerable<Specialization>> SearchSpecializations(string value, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return _specializations;
+
+        await Task.Delay(50, cancellationToken); 
+        return _specializations.Where(s => s.Name.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+}
